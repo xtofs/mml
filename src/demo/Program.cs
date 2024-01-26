@@ -13,17 +13,23 @@ using edmml;
 //     trait SchemaElement { // any of the elements of a schema
 //          Name: string,
 //     }
+//     class EntityType extends SchemaElement
+
 //     """;
 
 var input = """
     class Schema { 
         Namespace: string,
         Alias: string,
-        Element: &SchemaElement
+        Elements: Dictionary<SchemaElement.Name>
     }
 
     trait SchemaElement { 
         Name: string,
+    }
+
+    class EntityType 
+    {
     }
 
     """;

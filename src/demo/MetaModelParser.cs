@@ -11,10 +11,27 @@ static class MetaModelParser
             from id in Parser.Expect(TokenType.Identifier, "bool") select Builtin.Bool
         );
 
+        var dict =
+           from id in Parser.Expect(TokenType.Identifier, "Dictionary")
+           from op in Parser.Expect(TokenType.LessThanSign)
+           from pa in Parser.Expect(TokenType.Identifier).SeparatedBy(Parser.Expect(TokenType.Period))
+           from cl in Parser.Expect(TokenType.GreaterThanSign)
+           select new Dictionary(pa);
+        // Token { Value = 'Named', Type = Identifier, Position = Ln 4, Col 15 }
+        // Token { Value = '<', Type = LessThanSign, Position = Ln 4, Col 20 }
+        // Token { Value = 'SchemaElement', Type = Identifier, Position = Ln 4, Col 21 }
+        // Token { Value = '>', Type = GreaterThanSign, Position = Ln 4, Col 34 }
+
+        var reference =
+            from aa in Parser.Expect(TokenType.Ampersand)
+            from id in Parser.Expect(TokenType.Identifier)
+            select new Reference(id);
+
         var type = Parser.Alt<FieldType>(
+            from nc in dict select (FieldType)nc,
             from bi in builtin select (FieldType)bi,
             from id in Parser.Expect(TokenType.Identifier) select (FieldType)new Contained(id),
-            from aa in Parser.Expect(TokenType.Ampersand) from id in Parser.Expect(TokenType.Identifier) select (FieldType)new Reference(id)
+            from re in reference select (FieldType)re
         );
 
         var field =

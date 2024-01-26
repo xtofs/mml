@@ -20,17 +20,25 @@ abstract record Classifier(string Name, IReadOnlyList<Field> Fields)
     {
         writer ??= new IndentedTextWriter(Console.Out);
 
-        writer.WriteLine($"{Kind} {Name} {{");
-        var w = Fields.Max(f => f.Name.Length);
-        writer.Indent += 1;
-        foreach (var (field, last) in Fields.WithLast())
+
+        if (Fields.Any())
         {
-            field.Display(writer, w);
-            if (!last) { writer.Write(", "); }
-            writer.WriteLine();
+            writer.WriteLine($"{Kind} {Name} {{");
+            var w = Fields.Max(f => f.Name.Length);
+            writer.Indent += 1;
+            foreach (var (field, last) in Fields.WithLast())
+            {
+                field.Display(writer, w);
+                if (!last) { writer.Write(", "); }
+                writer.WriteLine();
+            }
+            writer.Indent -= 1;
+            writer.WriteLine($"}}");
         }
-        writer.Indent -= 1;
-        writer.WriteLine($"}}");
+        else
+        {
+            writer.WriteLine($"{Kind} {Name} {{ }}");
+        }
         writer.WriteLine();
     }
 }
@@ -97,5 +105,16 @@ sealed record Reference(string Name) : FieldType()
     public override void Display(IndentedTextWriter writer)
     {
         writer.Write("&{0}", Name);
+    }
+}
+
+
+sealed record Dictionary(IReadOnlyList<string> Path) : FieldType()
+{
+    public override string ToString() => $"{{Type &{string.Join(".", Path)}}}";
+
+    public override void Display(IndentedTextWriter writer)
+    {
+        writer.Write("Dictionary<{0}>", string.Join(".", Path));
     }
 }
