@@ -136,6 +136,34 @@ public static class Parser
         };
     }
 
+    public static Parser<T?> Optional<T>(this Parser<T> parser) // where T : class
+    {
+        return (ReadOnlyMemory<Token> tokens, [MaybeNullWhen(false)] out Result<T?> result) =>
+         {
+             if (parser(tokens, out var item))
+             {
+                 result = Result.New((T?)item.Value, item.Remainder);
+                 return true;
+             }
+             result = Result.New(default(T?), tokens); ;
+             return true;
+         };
+    }
+
+    public static Parser<T> Optional<T>(this Parser<T> parser, T @default) // where T : class
+    {
+        return (ReadOnlyMemory<Token> tokens, [MaybeNullWhen(false)] out Result<T> result) =>
+        {
+            if (parser(tokens, out var item))
+            {
+                result = Result.New((T)item.Value, item.Remainder);
+                return true;
+            }
+            result = Result.New(@default, tokens); ;
+            return true;
+        };
+    }
+
     public static Parser<IReadOnlyList<T>> SeparatedBy<T, S>(this Parser<T> itemParser, Parser<S> separatorParser)
     {
         return (ReadOnlyMemory<Token> tokens, [MaybeNullWhen(false)] out Result<IReadOnlyList<T>> result) =>

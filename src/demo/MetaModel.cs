@@ -2,7 +2,7 @@ using System.CodeDom.Compiler;
 using System.Diagnostics;
 using edmml;
 
-abstract record Classifier(string Name, IReadOnlyList<Field> Fields)
+abstract record Classifier(string Name, IReadOnlyList<Field> Fields, IReadOnlyList<string> Extends)
 {
     public LineInfo LineInfo { get; internal init; }
 
@@ -10,6 +10,7 @@ abstract record Classifier(string Name, IReadOnlyList<Field> Fields)
     {
         builder.AppendFormat("Name = {0}", Name);
         builder.AppendFormat(", Fields = [{0}]", string.Join(", ", Fields));
+        builder.AppendFormat(", Extends = [{0}]", string.Join(", ", Extends));
         // builder.AppendFormat(", LineInfo = {0}", LineInfo);
         return true;
     }
@@ -20,10 +21,14 @@ abstract record Classifier(string Name, IReadOnlyList<Field> Fields)
     {
         writer ??= new IndentedTextWriter(Console.Out);
 
-
+        writer.Write($"{Kind} {Name}");
+        if (Extends.Any())
+        {
+            writer.Write($" extends {string.Join(" + ", Extends)}");
+        }
         if (Fields.Any())
         {
-            writer.WriteLine($"{Kind} {Name} {{");
+            writer.WriteLine(" {");
             var w = Fields.Max(f => f.Name.Length);
             writer.Indent += 1;
             foreach (var (field, last) in Fields.WithLast())
@@ -37,21 +42,23 @@ abstract record Classifier(string Name, IReadOnlyList<Field> Fields)
         }
         else
         {
-            writer.WriteLine($"{Kind} {Name} {{ }}");
+            writer.WriteLine(" { }");
         }
         writer.WriteLine();
     }
 }
 
 
-sealed record Class(string Name, IReadOnlyList<Field> Fields) : Classifier(Name, Fields)
+sealed record Class(string Name, IReadOnlyList<Field> Fields, IReadOnlyList<string> Extends) :
+    Classifier(Name, Fields, Extends)
 {
     protected override string Kind => "class";
 
     protected override bool PrintMembers(StringBuilder builder) => base.PrintMembers(builder);
 }
 
-sealed record Trait(string Name, IReadOnlyList<Field> Fields) : Classifier(Name, Fields)
+sealed record Trait(string Name, IReadOnlyList<Field> Fields, IReadOnlyList<string> Extends) :
+    Classifier(Name, Fields, Extends)
 {
     protected override bool PrintMembers(StringBuilder builder) => base.PrintMembers(builder);
 
@@ -109,12 +116,13 @@ sealed record Reference(string Name) : FieldType()
 }
 
 
-sealed record Dictionary(IReadOnlyList<string> Path) : FieldType()
+sealed record Dictionary(string Type, IReadOnlyList<string> Path) : FieldType()
 {
     public override string ToString() => $"{{Type &{string.Join(".", Path)}}}";
 
     public override void Display(IndentedTextWriter writer)
     {
-        writer.Write("Dictionary<{0}>", string.Join(".", Path));
+        // writer.Write("Dictionary<{0}>", string.Join(".", Path));
+        writer.Write("[{0} | {1}]", Type, string.Join(".", Path));
     }
 }

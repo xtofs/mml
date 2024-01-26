@@ -12,8 +12,12 @@ public enum TokenType
     [Regex(@"\.")] Period,              // https://www.fileformat.info/info/unicode/char/002e/index.htm
     [Regex(":")] Colon,
     [Regex(";")] Semicolon,
-    [Regex("{")] LeftCurlyBracket,  // https://www.fileformat.info/info/unicode/char/007b/index.htm
-    [Regex("}")] RightCurlyBracket, // https://www.fileformat.info/info/unicode/char/007d/index.htm
+    [Regex("{")] LeftCurlyBracket,      // https://www.fileformat.info/info/unicode/char/007b/index.htm
+    [Regex(@"\|")] Pipe,                // https://www.fileformat.info/info/unicode/char/007c/index.htm
+    [Regex("}")] RightCurlyBracket,     // https://www.fileformat.info/info/unicode/char/007d/index.htm
+    [Regex(@"\[")] LeftSquareBracket,  // https://www.fileformat.info/info/unicode/char/005b/index.htm
+    [Regex(@"\]")] RightSquareBracket, // https://www.fileformat.info/info/unicode/char/005d/index.htm
+
     [Regex("<")] LessThanSign,      // https://www.fileformat.info/info/unicode/char/003c/index.htm
     [Regex("=")] EqualsSign,        // https://www.fileformat.info/info/unicode/char/003d/index.htm
     [Regex(">")] GreaterThanSign,   // https://www.fileformat.info/info/unicode/char/003e/index.htm

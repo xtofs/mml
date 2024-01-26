@@ -1,6 +1,3 @@
-using System.Diagnostics;
-using System.Reflection;
-
 namespace edmml;
 
 public static class Scanner
@@ -38,7 +35,7 @@ public static class Scanner
 
             var group = match.Groups.Cast<Group>().Skip(1).Single(g => g.Success);
             var type = Enum.Parse<TokenType>(group.Name);
-            if (includeWhitespace || type != TokenType.Whitespace)
+            if (includeWhitespace || type != TokenType.Whitespace && type != TokenType.LineComment)
             {
                 yield return new Token(type, match.Value, position);
             }

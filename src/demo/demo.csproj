@@ -9,7 +9,8 @@
 
   <ItemGroup>
     <Using Include="System.Text" />
-    <Using Include="System.Diagnostics.CodeAnalysis;" />
+    <Using Include="System.Diagnostics.CodeAnalysis" />
+    <Using Include="System.CodeDom.Compiler" />
   </ItemGroup>
 
   <ItemGroup>

@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "demo", "demo\demo.csproj", 
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "edmml", "edmml\edmml.csproj", "{C7F1C8EB-82A2-4136-808D-60548FA21285}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "spike", "spike\spike.csproj", "{7A1EA4AC-060E-4534-8C83-2C343A4E35AB}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{C7F1C8EB-82A2-4136-808D-60548FA21285}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{C7F1C8EB-82A2-4136-808D-60548FA21285}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{C7F1C8EB-82A2-4136-808D-60548FA21285}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7A1EA4AC-060E-4534-8C83-2C343A4E35AB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7A1EA4AC-060E-4534-8C83-2C343A4E35AB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7A1EA4AC-060E-4534-8C83-2C343A4E35AB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7A1EA4AC-060E-4534-8C83-2C343A4E35AB}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
