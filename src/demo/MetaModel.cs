@@ -1,3 +1,5 @@
+using System.CodeDom.Compiler;
+using System.Diagnostics;
 using edmml;
 
 abstract record Classifier(string Name, IReadOnlyList<Field> Fields)
@@ -11,23 +13,58 @@ abstract record Classifier(string Name, IReadOnlyList<Field> Fields)
         // builder.AppendFormat(", LineInfo = {0}", LineInfo);
         return true;
     }
+
+    protected abstract string Kind { get; }
+
+    public void Display(IndentedTextWriter writer = null!)
+    {
+        writer ??= new IndentedTextWriter(Console.Out);
+
+        writer.WriteLine($"{Kind} {Name} {{");
+        var w = Fields.Max(f => f.Name.Length);
+        writer.Indent += 1;
+        foreach (var (field, last) in Fields.WithLast())
+        {
+            field.Display(writer, w);
+            if (!last) { writer.Write(", "); }
+            writer.WriteLine();
+        }
+        writer.Indent -= 1;
+        writer.WriteLine($"}}");
+        writer.WriteLine();
+    }
 }
 
 
 sealed record Class(string Name, IReadOnlyList<Field> Fields) : Classifier(Name, Fields)
 {
+    protected override string Kind => "class";
+
     protected override bool PrintMembers(StringBuilder builder) => base.PrintMembers(builder);
 }
 
 sealed record Trait(string Name, IReadOnlyList<Field> Fields) : Classifier(Name, Fields)
 {
     protected override bool PrintMembers(StringBuilder builder) => base.PrintMembers(builder);
+
+    protected override string Kind => "trait";
 }
 
-sealed record Field(string Name, FieldType Type, LineInfo Position);
+sealed record Field(string Name, FieldType Type, LineInfo Position)
+{
+    internal void Display(IndentedTextWriter writer, int w)
+    {
+        writer.Write($"{(Name + ':').PadRight(w + 1)} ");
+        Type.Display(writer);
+    }
+}
 
 
-abstract record FieldType();
+abstract record FieldType()
+{
+    public abstract void Display(IndentedTextWriter writer);
+}
+
 
 sealed record Builtin(string Name) : FieldType()
 {
@@ -36,15 +73,29 @@ sealed record Builtin(string Name) : FieldType()
     public static Builtin Bool { get; } = new Builtin("bool");
 
     public override string ToString() => $"{{Type {Name}}}";
+
+    public override void Display(IndentedTextWriter writer)
+    {
+        writer.Write(Name);
+    }
 }
 
 sealed record Contained(string Name) : FieldType()
 {
     public override string ToString() => $"{{Type {Name}}}";
 
+    public override void Display(IndentedTextWriter writer)
+    {
+        writer.Write(Name);
+    }
 }
 
 sealed record Reference(string Name) : FieldType()
 {
     public override string ToString() => $"{{Type &{Name}}}";
+
+    public override void Display(IndentedTextWriter writer)
+    {
+        writer.Write("&{0}", Name);
+    }
 }

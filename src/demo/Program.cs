@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.CodeDom.Compiler;
+using System.Diagnostics.CodeAnalysis;
 using edmml;
 
 
@@ -36,7 +37,14 @@ Console.WriteLine();
 
 var tokens = Scanner.Scan(input, false).ToArray().AsMemory();
 
-if (MetaModelParser.Classifier(tokens, out var res))
+if (MetaModelParser.Classifiers(tokens, out var res))
 {
     System.Console.WriteLine("Success: {0}", res.Value);
+
+    var w = new IndentedTextWriter(Console.Out);
+    foreach (var x in res.Value)
+    {
+        x.Display(w);
+
+    }
 }
