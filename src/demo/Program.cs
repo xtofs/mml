@@ -1,0 +1,42 @@
+﻿using System.Diagnostics.CodeAnalysis;
+using edmml;
+
+
+// var input = """
+//     class Schema { 
+//         Namespace: string,
+//         Alias: string,
+//         Elements: Dictionary<SchemaElement.Name>,
+//     }
+
+//     trait SchemaElement { // any of the elements of a schema
+//          Name: string,
+//     }
+//     """;
+
+var input = """
+    class Schema { 
+        Namespace: string,
+        Alias: string,
+        Element: &SchemaElement
+    }
+
+    trait SchemaElement { 
+        Name: string,
+    }
+
+    """;
+
+foreach (var token in Scanner.Scan(input))
+{
+    Console.WriteLine(token);
+}
+Console.WriteLine();
+
+
+var tokens = Scanner.Scan(input, false).ToArray().AsMemory();
+
+if (MetaModelParser.Classifier(tokens, out var res))
+{
+    System.Console.WriteLine("Success: {0}", res.Value);
+}

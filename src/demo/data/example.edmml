@@ -1,0 +1,10 @@
+
+class Schema {
+    Namespace: string,
+    Alias: string,
+    elements: Dictionary<SchemaElement.Name>    
+}
+
+trait SchemaElement {
+    name: string
+}
