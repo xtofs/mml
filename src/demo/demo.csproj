@@ -11,10 +11,12 @@
     <Using Include="System.Text" />
     <Using Include="System.Diagnostics.CodeAnalysis" />
     <Using Include="System.CodeDom.Compiler" />
+    <Using Include="System.Diagnostics" />
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\edmml\edmml.csproj" />
+    <ProjectReference Include="..\mml\mml.csproj" />
+    <ProjectReference Include="..\mermaid\mermaid.csproj" />
   </ItemGroup>
 
 </Project>

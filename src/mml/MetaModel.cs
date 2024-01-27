@@ -1,8 +1,63 @@
-using System.CodeDom.Compiler;
-using System.Diagnostics;
-using edmml;
 
-abstract record Classifier(string Name, IReadOnlyList<Field> Fields, IReadOnlyList<string> Extends)
+namespace mml;
+
+using System.Diagnostics.CodeAnalysis;
+using mml.parsing;
+
+public record MetaModel(IReadOnlyList<Classifier> Classifiers) : IParsable<MetaModel>
+{
+    public static MetaModel Parse(string s, IFormatProvider? provider)
+    {
+        if (TryParse(s, out var mm))
+        {
+            return mm;
+        }
+        return new MetaModel([]);
+    }
+
+    public static bool TryParse([NotNullWhen(true)] string? s, [MaybeNullWhen(false)] out MetaModel result)
+    {
+        return TryParse(s, null, out result);
+    }
+
+    public static bool TryParse([NotNullWhen(true)] string? input, IFormatProvider? provider, [MaybeNullWhen(false)] out MetaModel result)
+    {
+        var tokens = Scanner.Scan(input ?? "", false).ToArray().AsMemory();
+
+        if (MetaModelParser.Classifiers(tokens, out var res))
+        {
+            result = new MetaModel(res.Value);
+            return true;
+        }
+
+        result = null;
+        return false;
+    }
+
+    public static MetaModel FromFile(string path)
+    {
+        var input = File.ReadAllText(path);
+        if (MetaModel.TryParse(input, out var res))
+        {
+            return res;
+        }
+        else
+        {
+            return new MetaModel([]);
+        }
+    }
+
+    public void Display(TextWriter @out)
+    {
+        var w = new IndentedTextWriter(@out);
+        foreach (var x in this.Classifiers)
+        {
+            x.Display(w);
+        }
+    }
+}
+
+public abstract record Classifier(string Name, IReadOnlyList<Field> Fields, IReadOnlyList<string> Extends)
 {
     public LineInfo LineInfo { get; internal init; }
 
@@ -48,8 +103,7 @@ abstract record Classifier(string Name, IReadOnlyList<Field> Fields, IReadOnlyLi
     }
 }
 
-
-sealed record Class(string Name, IReadOnlyList<Field> Fields, IReadOnlyList<string> Extends) :
+public sealed record Class(string Name, IReadOnlyList<Field> Fields, IReadOnlyList<string> Extends) :
     Classifier(Name, Fields, Extends)
 {
     protected override string Kind => "class";
@@ -57,7 +111,7 @@ sealed record Class(string Name, IReadOnlyList<Field> Fields, IReadOnlyList<stri
     protected override bool PrintMembers(StringBuilder builder) => base.PrintMembers(builder);
 }
 
-sealed record Trait(string Name, IReadOnlyList<Field> Fields, IReadOnlyList<string> Extends) :
+public sealed record Trait(string Name, IReadOnlyList<Field> Fields, IReadOnlyList<string> Extends) :
     Classifier(Name, Fields, Extends)
 {
     protected override bool PrintMembers(StringBuilder builder) => base.PrintMembers(builder);
@@ -65,7 +119,7 @@ sealed record Trait(string Name, IReadOnlyList<Field> Fields, IReadOnlyList<stri
     protected override string Kind => "trait";
 }
 
-sealed record Field(string Name, FieldType Type, LineInfo Position)
+public sealed record Field(string Name, FieldType Type, LineInfo Position)
 {
     internal void Display(IndentedTextWriter writer, int w)
     {
@@ -74,14 +128,12 @@ sealed record Field(string Name, FieldType Type, LineInfo Position)
     }
 }
 
-
-abstract record FieldType()
+public abstract record FieldType()
 {
     public abstract void Display(IndentedTextWriter writer);
 }
 
-
-sealed record Builtin(string Name) : FieldType()
+public sealed record Builtin(string Name) : FieldType()
 {
     public static Builtin String { get; } = new Builtin("string");
     public static Builtin Int { get; } = new Builtin("int");
@@ -95,7 +147,7 @@ sealed record Builtin(string Name) : FieldType()
     }
 }
 
-sealed record Contained(string Name) : FieldType()
+public sealed record Contained(string Name) : FieldType()
 {
     public override string ToString() => $"{{Type {Name}}}";
 
@@ -114,7 +166,6 @@ sealed record Reference(string Name) : FieldType()
         writer.Write("&{0}", Name);
     }
 }
-
 
 sealed record Dictionary(string Type, IReadOnlyList<string> Path) : FieldType()
 {

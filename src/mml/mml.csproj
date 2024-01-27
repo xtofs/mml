@@ -10,7 +10,9 @@
     <Using Include="System.Text" />
     <Using Include="System.Diagnostics" />
     <Using Include="System.Reflection" />
+    <Using Include="System.CodeDom.Compiler" />
     <Using Include="System.Text.RegularExpressions" />
     <Using Include="System.Diagnostics.CodeAnalysis;" />
+
   </ItemGroup>
 </Project>

@@ -1,4 +1,4 @@
-namespace edmml;
+namespace mml;
 
 public static class Scanner
 {

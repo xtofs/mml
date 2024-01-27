@@ -1,27 +1,9 @@
-﻿using edmml;
-
-var input = File.ReadAllText("example.edmml");
-
-// foreach (var token in Scanner.Scan(input))
-// {
-//     Console.WriteLine(token);
-// }
-// Console.WriteLine();
+﻿using mml;
 
 
-var tokens = Scanner.Scan(input, false).ToArray().AsMemory();
-
-if (MetaModelParser.Classifiers(tokens, out var res))
+if (MetaModel.TryParse(File.ReadAllText("data/example.mml"), out var model))
 {
-    Console.WriteLine("Success: ");
-    // foreach (var x in res.Value)
-    // {
-    //     Console.WriteLine("    {0}", x);
-    // }
 
-    var w = new IndentedTextWriter(Console.Out);
-    foreach (var x in res.Value)
-    {
-        x.Display(w);
-    }
+    model.Display(Console.Out);
 }
+

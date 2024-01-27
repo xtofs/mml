@@ -1,4 +1,4 @@
-using edmml;
+namespace mml.parsing;
 
 static class MetaModelParser
 {

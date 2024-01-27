@@ -1,4 +1,4 @@
-namespace edmml;
+namespace mml;
 
 [AttributeUsage(AttributeTargets.Field)]
 internal class RegexAttribute(string Pattern) : Attribute

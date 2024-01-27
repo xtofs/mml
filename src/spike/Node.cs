@@ -1,17 +1,17 @@
 
 
 
-record struct Label(string Forward, string Backward)
+public record struct Label(string Forward, string Backward)
 {
     public static implicit operator Label((string Forward, string Backward) label) => new(label.Forward, label.Backward);
     public static implicit operator (string Forward, string Backward)(Label label) => new(label.Forward, label.Backward);
 
-    public static Label Containment = ("contains", "contained");
+    public static Label ParentChild = ("child", "parent");
 }
 
-abstract record Node(string Name)
+public abstract record Node(string Name)
 {
-    public virtual IList<(Node Target, string Label)> Links { get; } = [];
+    public virtual IList<(Node Target, string Label)> Links { get; } = new List<(Node Target, string Label)>();
 
     public void Link(Node that, Label label)
     {
@@ -21,7 +21,7 @@ abstract record Node(string Name)
 
     public virtual bool TryFind<T>(string name, [MaybeNullWhen(false)] out T node, string label = null!) where T : Node
     {
-        label ??= Label.Containment.Forward;
+        label ??= Label.ParentChild.Forward;
         var lnk = Links.FirstOrDefault(lnk => lnk.Target.Name == name);
         if (lnk.Target != null && lnk.Target is T target)
         {
@@ -42,20 +42,21 @@ abstract record Node(string Name)
     }
 }
 
-abstract record IndexedNode(string Name) : Node(Name)
+public abstract record IndexedNode(string Name) : Node(Name)
 {
     private readonly IndexedLinkCollection links = new IndexedLinkCollection();
+
     public override IList<(Node Target, string Label)> Links => links;
 
     class IndexedLinkCollection : KeyedCollection<string, (Node Target, string Label)>
     {
-        protected override string GetKeyForItem((Node Target, string Label) lnk) => lnk.Target.Name;
+        protected override string GetKeyForItem((Node Target, string Label) lnk) => $"{lnk.Label}\u2014{lnk.Target.Name}";
     }
 
     public override bool TryFind<T>(string name, [MaybeNullWhen(false)] out T node, string label = null!)
     {
-        label ??= Label.Containment.Forward;
-        if (links.TryGetValue(name, out var n) && n.Target is T t)
+        label ??= Label.ParentChild.Forward;
+        if (links.TryGetValue($"{label}\u2014{name}", out var n) && n.Target is T t)
         {
             node = t; return true;
         }

@@ -1,4 +1,4 @@
-namespace edmml;
+namespace mml.parsing;
 
 
 public record struct Result<T>(T Value, ReadOnlyMemory<Token> Remainder);

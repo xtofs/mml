@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace edmml;
+namespace mml;
 
 
 public enum TokenType

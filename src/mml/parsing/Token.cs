@@ -2,7 +2,7 @@
 
 using System.Text;
 
-namespace edmml;
+namespace mml;
 public readonly record struct Token(TokenType Type, string Value, LineInfo Position)
 {
 
