@@ -12,6 +12,24 @@ trait Type {}
 
 trait ValueType extends Type {}
 
+
+class PrimitiveType extends SchemaElement + ValueType
+{ 
+     Name: string
+}
+
+class EnumType extends SchemaElement + ValueType
+{ 
+     Name: string,
+     Members: [Member | Name]
+}
+
+class Member 
+{
+     Name: string,
+     Value: int
+}
+
 class ComplexType extends SchemaElement + ValueType
 {
     Name: string,
@@ -21,12 +39,12 @@ class ComplexType extends SchemaElement + ValueType
 class EntityType extends SchemaElement + Type
 {
     Name: string,
-    Key: Key
+    Key: Key,
     Properties: [Property | Name]
 }
 
 class Key {
-    Elements: [PropertyRef | Alias]
+    PropertyRefs: [PropertyRef | Alias]
 }
 
 class PropertyRef
@@ -37,19 +55,19 @@ class PropertyRef
 
 trait Property
 {
-    Name: string,
+    Name: string
 }
 
 // #[XmlElement(Name=Property)]
 class StructuralProperty extends Property
 {
     Name: string,
-    Type: ValueType
+    Type: &ValueType
 }
 
 class NavigationProperty extends Property
 {
     Name: string,
-    Type: EntityType
+    Type: &EntityType
 }
 

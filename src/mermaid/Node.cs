@@ -5,13 +5,7 @@ namespace mermaid;
 
 public record Node(string Key, string Text, NodeShape Shape = NodeShape.Box)
 {
-    public void WriteTo(TextWriter writer)
-    {
-        var (open, close) = this.Shape.Parenthesis();
-        writer.WriteLine("{0}{1}{2}{3}{4}", INDENT, Key, open, Text, close);
-    }
 
-    internal const string INDENT = "    ";
 }
 
 public enum NodeShape

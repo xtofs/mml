@@ -50,17 +50,3 @@ public readonly record struct LineInfo(int Line, int Column)
 
 
 
-
-public static class StringExtensions
-{
-    public static string Escape(this String str)
-    {
-        return string.Create(str.Length, str, (span, val) =>
-        {
-            for (int i = 0; i < val.Length; i++)
-            {
-                span[i] = val[i] < 32 ? (char)(val[i] + '\u2400') : val[i];
-            }
-        });
-    }
-}

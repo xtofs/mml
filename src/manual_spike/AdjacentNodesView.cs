@@ -1,16 +1,16 @@
 
+namespace Graph;
 
-using System.Collections;
 
-class AdjacentNodesView<T>(Node source, Label label) : IEnumerable<T>
-   where T : Node
+class AdjacentNodes<T>(INode source, Link label) : IEnumerable<T>
+   where T : INode
 {
-    private readonly Node source = source;
-    private readonly Label label = label;
+    private readonly INode source = source;
+    private readonly Link label = label;
 
-    public T Add(T other)
+    public S Add<S>(S other) where S : T
     {
-        source.Link(other, label);
+        source.LinkTo(other, label);
         return other;
     }
 

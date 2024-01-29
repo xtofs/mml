@@ -15,6 +15,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Watch Include="**\*.mml" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\mml\mml.csproj" />
     <ProjectReference Include="..\mermaid\mermaid.csproj" />
   </ItemGroup>

@@ -30,18 +30,29 @@ public class Diagram
         WriteTo(file);
     }
 
+    internal const string INDENT = "    ";
+
     public void WriteTo(TextWriter writer)
     {
+        // https://mermaid.js.org/syntax/flowchart.html
         writer.WriteLine("```mermaid");
         writer.WriteLine("    graph");
         writer.WriteLine();
         foreach (var node in Nodes)
         {
-            node.WriteTo(writer);
+            var (open, close) = node.Shape.Parenthesis();
+            writer.WriteLine("{0}{1}{2}\"{3}\"{4}", INDENT, node.Key, open, node.Text, close);
         }
         foreach (var link in Links)
         {
-            link.WriteTo(writer);
+            if (string.IsNullOrEmpty(link.Label))
+            {
+                writer.WriteLine("{0}{1}-->{2}", INDENT, link.SourceKey, link.TargetKey);
+            }
+            else
+            {
+                writer.WriteLine("{0}{1}--{2}-->{3}", INDENT, link.SourceKey, link.Label, link.TargetKey);
+            }
         }
         writer.WriteLine("```");
     }

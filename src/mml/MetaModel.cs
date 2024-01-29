@@ -4,6 +4,8 @@ namespace mml;
 using System.Diagnostics.CodeAnalysis;
 using mml.parsing;
 
+
+
 public record MetaModel(IReadOnlyList<Classifier> Classifiers) : IParsable<MetaModel>
 {
     public static MetaModel Parse(string s, IFormatProvider? provider)
@@ -70,13 +72,13 @@ public abstract record Classifier(string Name, IReadOnlyList<Field> Fields, IRea
         return true;
     }
 
-    protected abstract string Kind { get; }
+    public abstract Kind Kind { get; }
 
     public void Display(IndentedTextWriter writer = null!)
     {
         writer ??= new IndentedTextWriter(Console.Out);
-
-        writer.Write($"{Kind} {Name}");
+        var kind = Kind == Kind.Class ? "class" : "trait";
+        writer.Write($"{kind} {Name}");
         if (Extends.Any())
         {
             writer.Write($" extends {string.Join(" + ", Extends)}");
@@ -103,10 +105,12 @@ public abstract record Classifier(string Name, IReadOnlyList<Field> Fields, IRea
     }
 }
 
+public enum Kind { Class, Trait };
+
 public sealed record Class(string Name, IReadOnlyList<Field> Fields, IReadOnlyList<string> Extends) :
     Classifier(Name, Fields, Extends)
 {
-    protected override string Kind => "class";
+    public override Kind Kind => Kind.Class;
 
     protected override bool PrintMembers(StringBuilder builder) => base.PrintMembers(builder);
 }
@@ -116,7 +120,7 @@ public sealed record Trait(string Name, IReadOnlyList<Field> Fields, IReadOnlyLi
 {
     protected override bool PrintMembers(StringBuilder builder) => base.PrintMembers(builder);
 
-    protected override string Kind => "trait";
+    public override Kind Kind => Kind.Trait;
 }
 
 public sealed record Field(string Name, FieldType Type, LineInfo Position)
@@ -133,11 +137,11 @@ public abstract record FieldType()
     public abstract void Display(IndentedTextWriter writer);
 }
 
-public sealed record Builtin(string Name) : FieldType()
+public sealed record Builtin(string Name, string CSharpName) : FieldType()
 {
-    public static Builtin String { get; } = new Builtin("string");
-    public static Builtin Int { get; } = new Builtin("int");
-    public static Builtin Bool { get; } = new Builtin("bool");
+    public static Builtin String { get; } = new Builtin("string", "string");
+    public static Builtin Int { get; } = new Builtin("int", "int");
+    public static Builtin Bool { get; } = new Builtin("bool", "bool");
 
     public override string ToString() => $"{{Type {Name}}}";
 
@@ -157,7 +161,7 @@ public sealed record Contained(string Name) : FieldType()
     }
 }
 
-sealed record Reference(string Name) : FieldType()
+public sealed record Reference(string Name) : FieldType()
 {
     public override string ToString() => $"{{Type &{Name}}}";
 
@@ -167,7 +171,7 @@ sealed record Reference(string Name) : FieldType()
     }
 }
 
-sealed record Dictionary(string Type, IReadOnlyList<string> Path) : FieldType()
+public sealed record Dictionary(string Type, IReadOnlyList<string> Path) : FieldType()
 {
     public override string ToString() => $"{{Type &{string.Join(".", Path)}}}";
 

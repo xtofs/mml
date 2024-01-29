@@ -12,4 +12,17 @@ public static class EnumerableExtensions
         }
         yield return (previous, true);
     }
+
+    public delegate bool Filter<T, R>(T item, [MaybeNullWhen(false)] out R res);
+
+    public static IEnumerable<R> FilterSelect<T, R>(this IEnumerable<T> enumerable, Filter<T, R> filter)
+    {
+        foreach (var item in enumerable)
+        {
+            if (filter(item, out var res))
+            {
+                yield return res;
+            }
+        }
+    }
 }
