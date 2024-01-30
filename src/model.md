@@ -1,7 +1,7 @@
 ```mermaid
     graph
 
-    n0["Model: $MODEL_ROOT"]
+    n0[("Model: $MODEL_ROOT")]
     n1["Schema: EDM"]
     n2["PrimitiveType: String"]
     n3["PrimitiveType: Int32"]
