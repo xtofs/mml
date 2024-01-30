@@ -130,13 +130,19 @@ public class ReferencedSingleton<T>(INode host) where T : INode
 
 public static class NodeExtensions
 {
+    /// <summary>
+    /// descendants of node (without self)
+    /// </summary>
+    /// <param name="node"></param>
+    /// <returns></returns>
     public static IEnumerable<INode> Descendants(this INode node)
     {
-        yield return node;
         foreach (var direct in node.Links
             .Where(lnk => lnk.Label == Label.CONTAINS && lnk.Label.IsForward)
             .Select(lnk => lnk.Target))
         {
+            yield return direct;
+
             foreach (var descendant in Descendants(direct))
             {
                 yield return descendant;
@@ -151,7 +157,8 @@ public static class NodeExtensions
         var diagram = new mermaid.Diagram();
         foreach (var (node, ix) in nodes)
         {
-            diagram.AddNode($"n{ix}", $"{node.GetType().Name}: {node.Name}");
+            var shape = node.GetType() == typeof(Schema) ? NodeShape.RoundedBox : NodeShape.Box;
+            diagram.AddNode($"n{ix}", $"{node.GetType().Name}: {node.Name}", shape);
         }
         foreach (var (source, label, target) in
             from nodeIx in nodes
@@ -161,7 +168,7 @@ public static class NodeExtensions
             where lnk.Label.IsForward
             select (ix, lnk.Label, nodes[lnk.Target]))
         {
-            diagram.AddLink($"n{source}", $"n{target}", label);
+            diagram.AddLink($"n{source}", $"n{target}", label.Name);
         }
         return diagram;
     }

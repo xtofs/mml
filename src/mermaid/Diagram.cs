@@ -43,6 +43,9 @@ public class Diagram
             var (open, close) = node.Shape.Parenthesis();
             writer.WriteLine("{0}{1}{2}\"{3}\"{4}", INDENT, node.Key, open, node.Text, close);
         }
+        var ix = 0;
+        var indices = new List<int>();
+        // A-. text .-> B
         foreach (var link in Links)
         {
             if (string.IsNullOrEmpty(link.Label))
@@ -51,9 +54,19 @@ public class Diagram
             }
             else
             {
-                writer.WriteLine("{0}{1}--{2}-->{3}", INDENT, link.SourceKey, link.Label, link.TargetKey);
+                if (link.Label == "contains")
+                {
+                    writer.WriteLine("{0}{1}--{2}-->{3}", INDENT, link.SourceKey, link.Label, link.TargetKey);
+                }
+                else
+                {
+                    writer.WriteLine("{0}{1}-.{2}.->{3}", INDENT, link.SourceKey, link.Label, link.TargetKey);
+                }
             }
+            if (link.Label == "contains") { indices.Add(ix); }
+            ix += 1;
         }
+        // writer.WriteLine("    linkStyle {0} stroke:orange", string.Join(",", indices));
         writer.WriteLine("```");
     }
 }

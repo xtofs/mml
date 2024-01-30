@@ -1,21 +1,18 @@
 ```mermaid
     graph
 
-    n0["Model: $MODEL_ROOT"]
-    n1["Schema: EDM"]
-    n2["PrimitiveType: String"]
-    n3["PrimitiveType: Int32"]
-    n4["Schema: ODataDemo"]
-    n5["EntityType: Product"]
-    n6["StructuralProperty: ID"]
-    n7["StructuralProperty: Description"]
+    n0("Schema: EDM")
+    n1["PrimitiveType: String"]
+    n2["PrimitiveType: Int32"]
+    n3("Schema: ODataDemo")
+    n4["EntityType: Product"]
+    n5["StructuralProperty: ID"]
+    n6["StructuralProperty: Description"]
     n0--contains-->n1
-    n0--contains-->n4
-    n1--contains-->n2
-    n1--contains-->n3
-    n4--contains-->n5
-    n5--contains-->n6
-    n5--contains-->n7
-    n6--references-->n3
-    n7--references-->n2
+    n0--contains-->n2
+    n3--contains-->n4
+    n4--contains-->n5 
+    n4--contains-->n6
+    n5-.references.->n2
+    n6-.references.->n1
 ```
