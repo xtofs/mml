@@ -9,12 +9,15 @@ public static class MetaModelExtensions
         //     Changes to this file may cause incorrect behavior and
         //     will be lost if the code is regenerated.
         // </auto-generated>
-        using model;
-
         """;
-    public static void GenerateCode(this MetaModel model, TextWriter writer)
+    public static void GenerateCode(this MetaModel model, TextWriter writer, string path)
     {
         writer.WriteLine(HEADER);
+        writer.WriteLine($"// generated from {path}, written {File.GetLastWriteTime(path).ToString("yyyy-MM-dd HH::mm:ss")}");
+        writer.WriteLine();
+        writer.WriteLine($"using model;");
+
+
 
         foreach (var classifier in model.Classifiers)
         {

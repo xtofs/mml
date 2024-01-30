@@ -54,6 +54,7 @@ public class Diagram
             }
             else
             {
+                // TODO: remove hardcoded styling
                 if (link.Label == "contains")
                 {
                     writer.WriteLine("{0}{1}--{2}-->{3}", INDENT, link.SourceKey, link.Label, link.TargetKey);
@@ -63,6 +64,7 @@ public class Diagram
                     writer.WriteLine("{0}{1}-.{2}.->{3}", INDENT, link.SourceKey, link.Label, link.TargetKey);
                 }
             }
+            // TODO: remove hardcoded styling
             if (link.Label == "contains") { indices.Add(ix); }
             ix += 1;
         }

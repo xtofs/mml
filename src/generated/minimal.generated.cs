@@ -4,8 +4,9 @@
 //     Changes to this file may cause incorrect behavior and
 //     will be lost if the code is regenerated.
 // </auto-generated>
-using model;
+// generated from data/minimal.mml, written 2024-01-30 13::02:23
 
+using model;
 public class Schema: Node
 {
     public  Schema (string Namespace, string Alias) : base(Namespace)
