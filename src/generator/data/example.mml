@@ -10,7 +10,9 @@ trait SchemaElement { // the child  elements of a schema
 
 trait Type {} 
 
-trait ValueType extends Type {}
+trait ValueType extends Type {
+     Name: string
+}
 
 
 class PrimitiveType extends SchemaElement + ValueType
@@ -58,7 +60,6 @@ trait Property
     Name: string
 }
 
-// #[XmlElement(Name=Property)]
 class StructuralProperty extends Property
 {
     Name: string,
