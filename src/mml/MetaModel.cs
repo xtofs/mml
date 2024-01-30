@@ -4,8 +4,6 @@ namespace mml;
 using System.Diagnostics.CodeAnalysis;
 using mml.parsing;
 
-
-
 public record MetaModel(IReadOnlyList<Classifier> Classifiers) : IParsable<MetaModel>
 {
     public static MetaModel Parse(string s, IFormatProvider? provider)

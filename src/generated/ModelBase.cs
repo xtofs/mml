@@ -1,10 +1,12 @@
+using mermaid;
+
 namespace model;
 
 public interface INode
 {
     string Name { get; }
 
-    IList<(string Label, bool IsForward, INode Target)> Links { get; }
+    IList<(Label Label, INode Target)> Links { get; }
 }
 
 public class Node : INode
@@ -19,7 +21,7 @@ public class Node : INode
 
     private readonly string typeName;
 
-    public IList<(string Label, bool IsForward, INode Target)> Links { get; } = [];
+    public IList<(Label Label, INode Target)> Links { get; } = [];
 
     public override string ToString()
     {
@@ -33,21 +35,20 @@ public class Node : INode
     {
         sb.AppendFormat("{0}{1}: {2}", indent, Name, typeName);
         sb.AppendLine();
-        foreach (var node in this.Links.Where(lnk => lnk.Label == CONTAINS && lnk.IsForward).Select(lnk => lnk.Target))
+        foreach (var node in this.Links.Where(lnk => lnk.Label == Label.CONTAINS && lnk.Label.IsForward).Select(lnk => lnk.Target))
         {
             ((Node)node).Print(sb, indent + "    ");
         }
     }
 
-    internal const string CONTAINS = "contains";
-    internal const string REFERENCES = "references";
+
 }
 
 public record class ContainedCollection<T>(INode Host, Func<T, string> Selector) : IEnumerable<T> where T : INode
 {
     public IEnumerable<T> Items = Host
             .Links
-            .Where(lnk => lnk.Label == Node.CONTAINS && lnk.IsForward)
+            .Where(lnk => lnk.Label == Label.CONTAINS && lnk.Label.IsForward)
             .Select(lnk => lnk.Target)
             .OfType<T>();
 
@@ -55,10 +56,10 @@ public record class ContainedCollection<T>(INode Host, Func<T, string> Selector)
 
     public S Add<S>(S item) where S : T
     {
-        Host.Links.RemoveFirst(lnk => lnk.Label == Node.REFERENCES && lnk.IsForward == true);
-        item.Links.RemoveFirst(lnk => lnk.Label == Node.REFERENCES && lnk.IsForward == false);
-        Host.Links.Add((Node.CONTAINS, true, item));
-        item.Links.Add((Node.CONTAINS, false, Host));
+        Host.Links.RemoveFirst(lnk => lnk.Label == Label.REFERENCES && lnk.Label.IsForward == true);
+        item.Links.RemoveFirst(lnk => lnk.Label == Label.REFERENCES && lnk.Label.IsForward == false);
+        Host.Links.Add((Label.CONTAINS, item));
+        item.Links.Add((Label.CONTAINS.Inverse, Host));
         return item;
     }
 
@@ -69,7 +70,7 @@ public record class ContainedSingleton<T>(INode Host) where T : INode
 {
     private IEnumerable<T> Items => Host
             .Links
-            .Where(lnk => lnk.Label == Node.CONTAINS && lnk.IsForward)
+            .Where(lnk => lnk.Label == Label.CONTAINS && lnk.Label.IsForward)
             .Select(lnk => lnk.Target)
             .OfType<T>();
 
@@ -79,16 +80,16 @@ public record class ContainedSingleton<T>(INode Host) where T : INode
 
     public S? Get<S>() where S : T => Host
               .Links
-              .Where(lnk => lnk.Label == Node.REFERENCES && lnk.IsForward)
+              .Where(lnk => lnk.Label == Label.REFERENCES && lnk.Label.IsForward)
               .Select(lnk => lnk.Target)
               .OfType<S>().SingleOrDefault();
 
     public S Set<S>(S item) where S : T
     {
-        Host.Links.RemoveFirst(lnk => lnk.Label == Node.CONTAINS && lnk.IsForward == true);
-        item.Links.RemoveFirst(lnk => lnk.Label == Node.CONTAINS && lnk.IsForward == false);
-        Host.Links.Add((Node.CONTAINS, true, item));
-        item.Links.Add((Node.CONTAINS, false, Host));
+        Host.Links.RemoveFirst(lnk => lnk.Label == Label.CONTAINS && lnk.Label.IsForward == true);
+        item.Links.RemoveFirst(lnk => lnk.Label == Label.CONTAINS && lnk.Label.IsForward == false);
+        Host.Links.Add((Label.CONTAINS, item));
+        item.Links.Add((Label.CONTAINS.Inverse, Host));
         return item;
     }
 }
@@ -112,17 +113,17 @@ public class ReferencedSingleton<T>(INode host) where T : INode
 
     public S? Get<S>() where S : T => Host
                .Links
-               .Where(lnk => lnk.Label == Node.REFERENCES && lnk.IsForward)
+               .Where(lnk => lnk.Label == Label.REFERENCES && lnk.Label.IsForward)
                .Select(lnk => lnk.Target)
                .OfType<S>()
                .SingleOrDefault();
 
     public S Set<S>(S item) where S : T
     {
-        Host.Links.RemoveFirst(lnk => lnk.Label == Node.REFERENCES && lnk.IsForward == true);
-        item.Links.RemoveFirst(lnk => lnk.Label == Node.REFERENCES && lnk.IsForward == false);
-        Host.Links.Add((Node.REFERENCES, true, item));
-        item.Links.Add((Node.REFERENCES, false, Host));
+        Host.Links.RemoveFirst(lnk => lnk.Label == Label.REFERENCES && lnk.Label.IsForward == true);
+        item.Links.RemoveFirst(lnk => lnk.Label == Label.REFERENCES && lnk.Label.IsForward == false);
+        Host.Links.Add((Label.REFERENCES, item));
+        item.Links.Add((Label.REFERENCES.Inverse, Host));
         return item;
     }
 }
@@ -133,7 +134,7 @@ public static class NodeExtensions
     {
         yield return node;
         foreach (var direct in node.Links
-            .Where(lnk => lnk.Label == Node.CONTAINS && lnk.IsForward)
+            .Where(lnk => lnk.Label == Label.CONTAINS && lnk.Label.IsForward)
             .Select(lnk => lnk.Target))
         {
             foreach (var descendant in Descendants(direct))
@@ -157,7 +158,7 @@ public static class NodeExtensions
             let n = nodeIx.Key
             let ix = nodeIx.Value
             from lnk in n.Links
-            where lnk.IsForward
+            where lnk.Label.IsForward
             select (ix, lnk.Label, nodes[lnk.Target]))
         {
             diagram.AddLink($"n{source}", $"n{target}", label);
@@ -188,4 +189,31 @@ public static class IEnumerableExtensions
             ix += 1;
         }
     }
+}
+
+/// <summary>
+/// Label on Links between nodes
+/// each Label has a name and an inverse (that itself is a Label)
+/// </summary>
+public class Label
+{
+    private Label(bool isForaward, string name) { IsForward = isForaward; Name = name; Inverse = default!; }
+
+    public string Name { get; }
+
+    public bool IsForward { get; }
+
+    public Label Inverse { get; private set; }
+
+    public static Label Create(string forward, string reverse)
+    {
+        var fwd = new Label(true, forward);
+        var rev = new Label(false, reverse);
+        fwd.Inverse = rev;
+        rev.Inverse = fwd;
+        return fwd;
+    }
+
+    public static readonly Label CONTAINS = Label.Create("contains", "containted");
+    public static readonly Label REFERENCES = Label.Create("references", "referenced");
 }
