@@ -32,8 +32,8 @@ var product = schema.Elements.Add(new EntityType("Product"));
 var id = product.Properties.Add(new StructuralProperty("ID") { Type = EDM.Int32 });
 var _d = product.Properties.Add(new StructuralProperty("Description") { Type = EDM.String });
 
-var k = product.Key.Set(new Key());
-k.PropertyRefs.Add(new PropertyRef("ID") { Name = id });
+// var k = product.Key.Set(new Key());
+// k.PropertyRefs.Add(new PropertyRef("ID") { Name = id });
 
 Console.WriteLine(schema);
 

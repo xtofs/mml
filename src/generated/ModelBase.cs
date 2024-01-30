@@ -4,7 +4,7 @@ public interface INode
 {
     string Name { get; }
 
-    IList<(string Label, bool Direction, INode Target)> Links { get; }
+    IList<(string Label, bool IsForward, INode Target)> Links { get; }
 }
 
 public class Node : INode
@@ -19,7 +19,7 @@ public class Node : INode
 
     private readonly string typeName;
 
-    public IList<(string Label, bool Direction, INode Target)> Links { get; } = [];
+    public IList<(string Label, bool IsForward, INode Target)> Links { get; } = [];
 
     public override string ToString()
     {
@@ -33,7 +33,7 @@ public class Node : INode
     {
         sb.AppendFormat("{0}{1}: {2}", indent, Name, typeName);
         sb.AppendLine();
-        foreach (var node in this.Links.Where(lnk => lnk.Label == CONTAINS).Select(lnk => lnk.Target))
+        foreach (var node in this.Links.Where(lnk => lnk.Label == CONTAINS && lnk.IsForward).Select(lnk => lnk.Target))
         {
             ((Node)node).Print(sb, indent + "    ");
         }
@@ -47,7 +47,7 @@ public record class ContainedCollection<T>(INode Host, Func<T, string> Selector)
 {
     public IEnumerable<T> Items = Host
             .Links
-            .Where(lnk => lnk.Label == Node.CONTAINS)
+            .Where(lnk => lnk.Label == Node.CONTAINS && lnk.IsForward)
             .Select(lnk => lnk.Target)
             .OfType<T>();
 
@@ -55,8 +55,8 @@ public record class ContainedCollection<T>(INode Host, Func<T, string> Selector)
 
     public S Add<S>(S item) where S : T
     {
-        Host.Links.RemoveFirst(lnk => lnk.Label == Node.REFERENCES && lnk.Direction == true);
-        item.Links.RemoveFirst(lnk => lnk.Label == Node.REFERENCES && lnk.Direction == false);
+        Host.Links.RemoveFirst(lnk => lnk.Label == Node.REFERENCES && lnk.IsForward == true);
+        item.Links.RemoveFirst(lnk => lnk.Label == Node.REFERENCES && lnk.IsForward == false);
         Host.Links.Add((Node.CONTAINS, true, item));
         item.Links.Add((Node.CONTAINS, false, Host));
         return item;
@@ -69,7 +69,7 @@ public record class ContainedSingleton<T>(INode Host) where T : INode
 {
     private IEnumerable<T> Items => Host
             .Links
-            .Where(lnk => lnk.Label == Node.CONTAINS)
+            .Where(lnk => lnk.Label == Node.CONTAINS && lnk.IsForward)
             .Select(lnk => lnk.Target)
             .OfType<T>();
 
@@ -79,14 +79,14 @@ public record class ContainedSingleton<T>(INode Host) where T : INode
 
     public S? Get<S>() where S : T => Host
               .Links
-              .Where(lnk => lnk.Label == Node.REFERENCES)
+              .Where(lnk => lnk.Label == Node.REFERENCES && lnk.IsForward)
               .Select(lnk => lnk.Target)
               .OfType<S>().SingleOrDefault();
 
     public S Set<S>(S item) where S : T
     {
-        Host.Links.RemoveFirst(lnk => lnk.Label == Node.CONTAINS && lnk.Direction == true);
-        item.Links.RemoveFirst(lnk => lnk.Label == Node.CONTAINS && lnk.Direction == false);
+        Host.Links.RemoveFirst(lnk => lnk.Label == Node.CONTAINS && lnk.IsForward == true);
+        item.Links.RemoveFirst(lnk => lnk.Label == Node.CONTAINS && lnk.IsForward == false);
         Host.Links.Add((Node.CONTAINS, true, item));
         item.Links.Add((Node.CONTAINS, false, Host));
         return item;
@@ -112,15 +112,15 @@ public class ReferencedSingleton<T>(INode host) where T : INode
 
     public S? Get<S>() where S : T => Host
                .Links
-               .Where(lnk => lnk.Label == Node.REFERENCES)
+               .Where(lnk => lnk.Label == Node.REFERENCES && lnk.IsForward)
                .Select(lnk => lnk.Target)
                .OfType<S>()
                .SingleOrDefault();
 
     public S Set<S>(S item) where S : T
     {
-        Host.Links.RemoveFirst(lnk => lnk.Label == Node.REFERENCES && lnk.Direction == true);
-        item.Links.RemoveFirst(lnk => lnk.Label == Node.REFERENCES && lnk.Direction == false);
+        Host.Links.RemoveFirst(lnk => lnk.Label == Node.REFERENCES && lnk.IsForward == true);
+        item.Links.RemoveFirst(lnk => lnk.Label == Node.REFERENCES && lnk.IsForward == false);
         Host.Links.Add((Node.REFERENCES, true, item));
         item.Links.Add((Node.REFERENCES, false, Host));
         return item;
@@ -131,11 +131,11 @@ public static class NodeExtensions
 {
     public static IEnumerable<INode> Descendants(this INode node)
     {
+        yield return node;
         foreach (var direct in node.Links
-            .Where(lnk => lnk.Label == Node.CONTAINS)
+            .Where(lnk => lnk.Label == Node.CONTAINS && lnk.IsForward)
             .Select(lnk => lnk.Target))
         {
-            yield return direct!;
             foreach (var descendant in Descendants(direct))
             {
                 yield return descendant;
@@ -145,19 +145,22 @@ public static class NodeExtensions
 
     public static mermaid.Diagram ToDiagram(this Node root)
     {
-        var nodes = Descendants(root).ToArray();
+        var nodes = Descendants(root).Enumerate().ToDictionary();
 
         var diagram = new mermaid.Diagram();
-        foreach (var node in nodes)
+        foreach (var (node, ix) in nodes)
         {
-            diagram.AddNode(node.Name, $"{node.GetType().Name}: {node.Name}");
+            diagram.AddNode($"n{ix}", $"{node.GetType().Name}: {node.Name}");
         }
-        foreach (var (s, l, t) in
-            from n in nodes
+        foreach (var (source, label, target) in
+            from nodeIx in nodes
+            let n = nodeIx.Key
+            let ix = nodeIx.Value
             from lnk in n.Links
-            select (n.Name, lnk.Label, lnk.Target.Name))
+            where lnk.IsForward
+            select (ix, lnk.Label, nodes[lnk.Target]))
         {
-            diagram.AddLink(s, t, l);
+            diagram.AddLink($"n{source}", $"n{target}", label);
         }
         return diagram;
     }
@@ -173,3 +176,16 @@ public class Model : Node
     public ContainedCollection<Node> Nodes { get; }
 }
 
+
+public static class IEnumerableExtensions
+{
+    public static IEnumerable<(T Item, int Index)> Enumerate<T>(this IEnumerable<T> items)
+    {
+        var ix = 0;
+        foreach (var item in items)
+        {
+            yield return (item, ix);
+            ix += 1;
+        }
+    }
+}
