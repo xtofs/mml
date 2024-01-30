@@ -4,7 +4,7 @@ public interface INode
 {
     string Name { get; }
 
-    IList<(string Label, INode Target)> Links { get; }
+    IList<(string Label, bool Direction, INode Target)> Links { get; }
 }
 
 public class Node : INode
@@ -19,7 +19,7 @@ public class Node : INode
 
     private readonly string typeName;
 
-    public IList<(string Label, INode Target)> Links { get; } = [];
+    public IList<(string Label, bool Direction, INode Target)> Links { get; } = [];
 
     public override string ToString()
     {
@@ -43,33 +43,6 @@ public class Node : INode
     internal const string REFERENCES = "references";
 }
 
-public record class ContainedSingleton<T>(INode Host) where T : INode
-{
-}
-
-public class ReferencedSingleton<T>(INode host) where T : INode
-{
-
-    private readonly INode Host = host;
-
-    public T? Get() => Host
-               .Links
-               .Where(lnk => lnk.Label == Node.REFERENCES)
-               .Select(lnk => lnk.Target)
-               .OfType<T>().SingleOrDefault();
-
-    public void Set(T value)
-    {
-        int i = 0;
-        while (i < Host.Links.Count)
-        {
-            if (Host.Links[i].Label == Node.REFERENCES) { Host.Links.RemoveAt(i); break; }
-            i++;
-        }
-        Host.Links.Add((Node.REFERENCES, value));
-    }
-}
-
 public record class ContainedCollection<T>(INode Host, Func<T, string> Selector) : IEnumerable<T> where T : INode
 {
     public IEnumerable<T> Items = Host
@@ -82,11 +55,76 @@ public record class ContainedCollection<T>(INode Host, Func<T, string> Selector)
 
     public S Add<S>(S item) where S : T
     {
-        Host.Links.Add((Node.CONTAINS, item));
+        Host.Links.RemoveFirst(lnk => lnk.Label == Node.REFERENCES && lnk.Direction == true);
+        item.Links.RemoveFirst(lnk => lnk.Label == Node.REFERENCES && lnk.Direction == false);
+        Host.Links.Add((Node.CONTAINS, true, item));
+        item.Links.Add((Node.CONTAINS, false, Host));
         return item;
     }
 
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+}
+
+public record class ContainedSingleton<T>(INode Host) where T : INode
+{
+    private IEnumerable<T> Items => Host
+            .Links
+            .Where(lnk => lnk.Label == Node.CONTAINS)
+            .Select(lnk => lnk.Target)
+            .OfType<T>();
+
+    public T? Value => Items.FirstOrDefault();
+
+    public IEnumerator<T> GetEnumerator() => Items.GetEnumerator();
+
+    public S? Get<S>() where S : T => Host
+              .Links
+              .Where(lnk => lnk.Label == Node.REFERENCES)
+              .Select(lnk => lnk.Target)
+              .OfType<S>().SingleOrDefault();
+
+    public S Set<S>(S item) where S : T
+    {
+        Host.Links.RemoveFirst(lnk => lnk.Label == Node.CONTAINS && lnk.Direction == true);
+        item.Links.RemoveFirst(lnk => lnk.Label == Node.CONTAINS && lnk.Direction == false);
+        Host.Links.Add((Node.CONTAINS, true, item));
+        item.Links.Add((Node.CONTAINS, false, Host));
+        return item;
+    }
+}
+
+internal static class IListExtensions
+{
+    public static void RemoveFirst<T>(this IList<T> list, Func<T, bool> pred)
+    {
+        int i = 0;
+        while (i < list.Count)
+        {
+            if (pred(list[i])) { list.RemoveAt(i); break; }
+            i += 1;
+        }
+    }
+}
+
+public class ReferencedSingleton<T>(INode host) where T : INode
+{
+    private readonly INode Host = host;
+
+    public S? Get<S>() where S : T => Host
+               .Links
+               .Where(lnk => lnk.Label == Node.REFERENCES)
+               .Select(lnk => lnk.Target)
+               .OfType<S>()
+               .SingleOrDefault();
+
+    public S Set<S>(S item) where S : T
+    {
+        Host.Links.RemoveFirst(lnk => lnk.Label == Node.REFERENCES && lnk.Direction == true);
+        item.Links.RemoveFirst(lnk => lnk.Label == Node.REFERENCES && lnk.Direction == false);
+        Host.Links.Add((Node.REFERENCES, true, item));
+        item.Links.Add((Node.REFERENCES, false, Host));
+        return item;
+    }
 }
 
 public static class NodeExtensions

@@ -6,9 +6,9 @@
 // </auto-generated>
 using model;
 
-public class Schema : Node
+public class Schema: Node
 {
-    public Schema(string Namespace, string Alias) : base(Namespace)
+    public  Schema (string Namespace, string Alias) : base(Namespace)
     {
         this.Elements = new ContainedCollection<SchemaElement>(this, (x) => x.Name);
     }
@@ -20,29 +20,29 @@ public class Schema : Node
     public ContainedCollection<SchemaElement> Elements { get; }
 }
 
-public interface SchemaElement : INode
+public interface SchemaElement: INode
 {
 }
 
-public interface Type : INode
+public interface Type: INode
 {
 }
 
-public interface ValueType : INode, Type
+public interface ValueType: INode, Type
 {
 }
 
-public class PrimitiveType : Node, SchemaElement, ValueType
+public class PrimitiveType: Node, SchemaElement, ValueType
 {
-    public PrimitiveType(string Name) : base(Name)
+    public  PrimitiveType (string Name) : base(Name)
     {
     }
 
 }
 
-public class EnumType : Node, SchemaElement, ValueType
+public class EnumType: Node, SchemaElement, ValueType
 {
-    public EnumType(string Name) : base(Name)
+    public  EnumType (string Name) : base(Name)
     {
         this.Members = new ContainedCollection<Member>(this, (x) => x.Name);
     }
@@ -51,9 +51,9 @@ public class EnumType : Node, SchemaElement, ValueType
     public ContainedCollection<Member> Members { get; }
 }
 
-public class Member : Node
+public class Member: Node
 {
-    public Member(string Name, int Value) : base(Name)
+    public  Member (string Name, int Value) : base(Name)
     {
     }
 
@@ -61,9 +61,9 @@ public class Member : Node
     public int Value { get; }
 }
 
-public class ComplexType : Node, SchemaElement, ValueType
+public class ComplexType: Node, SchemaElement, ValueType
 {
-    public ComplexType(string Name) : base(Name)
+    public  ComplexType (string Name) : base(Name)
     {
         this.Properties = new ContainedCollection<Property>(this, (x) => x.Name);
     }
@@ -72,23 +72,23 @@ public class ComplexType : Node, SchemaElement, ValueType
     public ContainedCollection<Property> Properties { get; }
 }
 
-public class EntityType : Node, SchemaElement, Type
+public class EntityType: Node, SchemaElement, Type
 {
-    public EntityType(string Name) : base(Name)
+    public  EntityType (string Name) : base(Name)
     {
         this.Key = new ContainedSingleton<Key>(this);
         this.Properties = new ContainedCollection<Property>(this, (x) => x.Name);
     }
 
 
-    public ContainedSingleton<Key> Key { get; }
+    public  ContainedSingleton<Key> Key { get; }
 
     public ContainedCollection<Property> Properties { get; }
 }
 
-public class Key : Node
+public class Key: Node
 {
-    public Key() : base("")
+    public  Key () : base("")
     {
         this.PropertyRefs = new ContainedCollection<PropertyRef>(this, (x) => x.Alias);
     }
@@ -96,44 +96,44 @@ public class Key : Node
     public ContainedCollection<PropertyRef> PropertyRefs { get; }
 }
 
-public class PropertyRef : Node
+public class PropertyRef: Node
 {
-    public PropertyRef(string Alias) : base(Alias)
+    public  PropertyRef (string Alias) : base(Alias)
     {
         this._Name = new ReferencedSingleton<Property>(this);
     }
 
     private ReferencedSingleton<Property> _Name { get; }
-    public Property Name { get => _Name.Get(); set => _Name.Set(value); }
+    public new Property Name { get => _Name.Get<Property>(); set => _Name.Set(value); }
 
     public string Alias { get; }
 }
 
-public interface Property : INode
+public interface Property: INode
 {
 }
 
-public class StructuralProperty : Node, Property
+public class StructuralProperty: Node, Property
 {
-    public StructuralProperty(string Name) : base(Name)
+    public  StructuralProperty (string Name) : base(Name)
     {
         this._Type = new ReferencedSingleton<ValueType>(this);
     }
 
 
     private ReferencedSingleton<ValueType> _Type { get; }
-    public ValueType Type { get => _Type.Get(); set => _Type.Set(value); }
+    public ValueType Type { get => _Type.Get<ValueType>(); set => _Type.Set(value); }
 }
 
-public class NavigationProperty : Node, Property
+public class NavigationProperty: Node, Property
 {
-    public NavigationProperty(string Name) : base(Name)
+    public  NavigationProperty (string Name) : base(Name)
     {
         this._Type = new ReferencedSingleton<EntityType>(this);
     }
 
 
     private ReferencedSingleton<EntityType> _Type { get; }
-    public EntityType Type { get => _Type.Get(); set => _Type.Set(value); }
+    public EntityType Type { get => _Type.Get<EntityType>(); set => _Type.Set(value); }
 }
 

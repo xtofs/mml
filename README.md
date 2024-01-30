@@ -3,11 +3,15 @@
 
 
 
-## the `demo` project
+## the `generator` project
 
 the demo project
 - parses a .mml file
 - generates c# code to construct a model in memory
+
+```sh
+    dotnet watch run --project generator --no-hot-reload
+```
 
 ## the `generated` project
 - uses the generated code to built an CSDL model in memory
@@ -15,5 +19,5 @@ the demo project
 - writes a mermaid diagram of the constructed model
 
 ```sh
-    dotnet watch run --project demo --no-hot-reload
+    dotnet watch run --project generated --no-hot-reload
 ```

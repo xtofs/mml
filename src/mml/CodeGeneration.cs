@@ -27,10 +27,6 @@ public static class MetaModelExtensions
                     GenerateInterface(@trait, writer);
                     break;
             }
-            //  var isClass = classifier.Kind == Kind.Class;
-            //             var kind = isClass ? "class" : "interface";
-            //             var access = isClass ? "public " : " ";
-            //             var @base = isClass ? "Node" : "INode";
         }
     }
 
@@ -89,21 +85,22 @@ public static class MetaModelExtensions
             {
                 continue;
             }
+            var attr = name == "Name" ? "new " : "";
 
             switch (type)
             {
                 case Builtin bi:
-                    writer.WriteLine($"    public {bi.CSharpName} {name} {{ get; }}");
+                    writer.WriteLine($"    public {attr}{bi.CSharpName} {name} {{ get; }}");
                     break;
                 case Contained co:
-                    writer.WriteLine($"    public ContainedSingleton<{co.Name}> {name} {{ get; }}");
+                    writer.WriteLine($"    public {attr} ContainedSingleton<{co.Name}> {name} {{ get; }}");
                     break;
                 case Reference re:
                     writer.WriteLine($"    private ReferencedSingleton<{re.Name}> _{name} {{ get; }}");
-                    writer.WriteLine($"    public {re.Name} {name} {{ get => _{name}.Get(); set => _{name}.Set(value); }}");
+                    writer.WriteLine($"    public {attr}{re.Name} {name} {{ get => _{name}.Get<{re.Name}>(); set => _{name}.Set(value); }}");
                     break;
                 case Dictionary di:
-                    writer.WriteLine($"    public ContainedCollection<{di.Type}> {name} {{ get; }}");
+                    writer.WriteLine($"    public {attr}ContainedCollection<{di.Type}> {name} {{ get; }}");
                     break;
                 default:
                     throw new InvalidOperationException($"unknown enum value {type}");
