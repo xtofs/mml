@@ -27,7 +27,8 @@ product.Properties.Add(new StructuralProperty("ID") { Type = EDM.Int32 });
 product.Properties.Add(new StructuralProperty("Description") { Type = EDM.String });
 product.Properties.Add(new NavigationProperty("Category") { Type = category });
 
+schema.WriteXml(model, Console.Out);
+
 var diagram = model.ToDiagram();
 diagram.WriteTo("model.md");
 
-schema.WriteXml(model, Console.Out);
