@@ -16,8 +16,12 @@ public static class NodeXmlExtensions
     public static void WriteXml(this Model model, Schema schema, TextWriter writer)
     {
         var xml = schema.ToXml(model);
-        using var xmlWriter = XmlWriter.Create(writer, new XmlWriterSettings { Indent = true });
-        xml.WriteTo(xmlWriter);
+        using (var xmlWriter = XmlWriter.Create(writer, new XmlWriterSettings { Indent = true }))
+        {
+            xml.WriteTo(xmlWriter);
+            // xmlWriter.Flush();
+        }
+        writer.WriteLine();
     }
 
     public static XElement ToXml(this INode node, Model root)
@@ -36,11 +40,11 @@ public static class NodeXmlExtensions
             element.Add(contained.ToXml(root));
         }
 
-        foreach (var referenced in node.Links
+        foreach (var (target, labelName) in node.Links
             .Where(lnk => lnk.Label != Label.CONTAINS && lnk.Label.IsForward)
             .Select(lnk => (lnk.Target, lnk.Label.Name)))
         {
-            element.SetAttributeValue(referenced.Name, referenced.Target.GetQualifiedName(root));
+            element.SetAttributeValue(labelName, target.GetQualifiedName(root));
         }
         return element;
     }
