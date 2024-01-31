@@ -41,19 +41,19 @@ class ComplexType extends SchemaElement + ValueType
 class EntityType extends SchemaElement + Type
 {
     Name: string,
-    Key: Key,
+    // Key: Key,
     Properties: [Property; Name]
 }
 
-class Key {
-    PropertyRefs: [PropertyRef; Alias]
-}
+// class Key {
+//     PropertyRefs: [PropertyRef; Alias]
+// }
 
-class PropertyRef
-{
-    Name: &Property, // in CSDL XML, the value of Name is a path expression leading to a primitive property.
-    Alias: string    // The value of Alias is a simple identifier.
-}
+// class PropertyRef
+// {
+//     Name: &Property, // in CSDL XML, the value of Name is a path expression leading to a primitive property.
+//     Alias: string    // The value of Alias is a simple identifier.
+// }
 
 trait Property
 {
@@ -63,12 +63,13 @@ trait Property
 class StructuralProperty extends Property
 {
     Name: string,
-    Type: &ValueType
+    Type: &ValueType // i.e. !EntityType
 }
 
 class NavigationProperty extends Property
 {
     Name: string,
-    Type: &EntityType
+    Type: &EntityType,
+    ContainsTarget: bool
 }
 

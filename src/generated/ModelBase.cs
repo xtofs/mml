@@ -87,8 +87,8 @@ public record class ContainedCollection<T>(INode Host, Func<T, string> Selector)
 
     public S Add<S>(S item) where S : T
     {
-        Host.Links.RemoveFirst(lnk => lnk.Label == Label.REFERENCES && lnk.Label.IsForward == true);
-        item.Links.RemoveFirst(lnk => lnk.Label == Label.REFERENCES && lnk.Label.IsForward == false);
+        Host.Links.RemoveFirst(lnk => lnk.Label != Label.CONTAINS && lnk.Label.IsForward == true);
+        item.Links.RemoveFirst(lnk => lnk.Label != Label.CONTAINS && lnk.Label.IsForward == false);
         Host.Links.Add((Label.CONTAINS, item));
         item.Links.Add((Label.CONTAINS.Inverse, Host));
         return item;
@@ -97,26 +97,33 @@ public record class ContainedCollection<T>(INode Host, Func<T, string> Selector)
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 }
 
-public record class ContainedSingleton<T>(INode Host) where T : INode
+public class ContainedSingleton<T> where T : INode, new()
 {
+    private readonly INode Host;
+
+    public ContainedSingleton(INode host)
+    {
+        Host = host;
+        var item = new T();
+        Host.Links.Add((Label.CONTAINS, item));
+        item.Links.Add((Label.CONTAINS.Inverse, Host));
+    }
+
     private IEnumerable<T> Items => Host
             .Links
             .Where(lnk => lnk.Label == Label.CONTAINS && lnk.Label.IsForward)
             .Select(lnk => lnk.Target)
             .OfType<T>();
 
-    public T? Value => Items.FirstOrDefault();
+    public S? Get<S>() where S : T => Items
+              .OfType<S>()
+              .SingleOrDefault();
 
     public IEnumerator<T> GetEnumerator() => Items.GetEnumerator();
 
-    public S? Get<S>() where S : T => Host
-              .Links
-              .Where(lnk => lnk.Label == Label.REFERENCES && lnk.Label.IsForward)
-              .Select(lnk => lnk.Target)
-              .OfType<S>().SingleOrDefault();
-
     public S Set<S>(S item) where S : T
     {
+        // TODO: might break if a node has two ContainedSingletons
         Host.Links.RemoveFirst(lnk => lnk.Label == Label.CONTAINS && lnk.Label.IsForward == true);
         item.Links.RemoveFirst(lnk => lnk.Label == Label.CONTAINS && lnk.Label.IsForward == false);
         Host.Links.Add((Label.CONTAINS, item));
@@ -125,23 +132,30 @@ public record class ContainedSingleton<T>(INode Host) where T : INode
     }
 }
 
-public class ReferencedSingleton<T>(INode host) where T : INode
+public class ReferencedSingleton<T> where T : INode
 {
-    private readonly INode Host = host;
+    private readonly INode Host;
+    private readonly Label Label;
+
+    public ReferencedSingleton(INode host, string propertyName, string revPropertyName)
+    {
+        Host = host;
+        Label = Label.Create(propertyName, revPropertyName);
+    }
 
     public S? Get<S>() where S : T => Host
-               .Links
-               .Where(lnk => lnk.Label == Label.REFERENCES && lnk.Label.IsForward)
-               .Select(lnk => lnk.Target)
-               .OfType<S>()
-               .SingleOrDefault();
+        .Links
+        .Where(lnk => lnk.Label == this.Label)
+        .Select(lnk => lnk.Target)
+        .OfType<S>()
+        .SingleOrDefault();
 
     public S Set<S>(S item) where S : T
     {
-        Host.Links.RemoveFirst(lnk => lnk.Label == Label.REFERENCES && lnk.Label.IsForward == true);
-        item.Links.RemoveFirst(lnk => lnk.Label == Label.REFERENCES && lnk.Label.IsForward == false);
-        Host.Links.Add((Label.REFERENCES, item));
-        item.Links.Add((Label.REFERENCES.Inverse, Host));
+        Host.Links.RemoveFirst(lnk => lnk.Label == this.Label);
+        item.Links.RemoveFirst(lnk => lnk.Label == this.Label.Inverse);
+        Host.Links.Add((this.Label, item));
+        item.Links.Add((this.Label.Inverse, Host));
         return item;
     }
 }
@@ -187,8 +201,14 @@ public static class NodeExtensions
                       select (ix, lnk.Label, nodes.TryGetValue(lnk.Target, out var tgt) ? tgt : throw new KeyNotFoundException($"Key for {lnk.Target} not found"));
         foreach (var (source, label, target) in triples)
         {
-            var style = label.Name == Label.CONTAINS.Name ? ContainmentStyle : ReferenceStyle;
-            diagram.AddLink($"n{source}", $"n{target}", "" /*label.Name*/, style);
+            if (label == Label.CONTAINS)
+            {
+                diagram.AddLink($"n{source}", $"n{target}", "", ContainmentStyle);
+            }
+            else
+            {
+                diagram.AddLink($"n{source}", $"n{target}", label.Name, ReferenceStyle);
+            }
         }
         return diagram;
     }
@@ -236,5 +256,5 @@ public class Label
 
     public static readonly Label CONTAINS = Label.Create("contains", "containted");
 
-    public static readonly Label REFERENCES = Label.Create("references", "referenced");
+    // public static readonly Label REFERENCES = Label.Create("references", "referenced");
 }

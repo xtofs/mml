@@ -7,8 +7,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mml", "mml\mml.csproj", "{8
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "generator", "generator\generator.csproj", "{80E03D3C-3543-44B5-AC63-BE70B1DDF909}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "spike", "manual_spike\spike.csproj", "{2339B9FE-A236-40A0-894D-A153F9B08034}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mermaid", "mermaid\mermaid.csproj", "{2BDCA148-09A6-40F6-AF71-0F9444B4AC41}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "generated", "generated\generated.csproj", "{3266E8EC-770A-4CEF-8608-AB26A844A156}"

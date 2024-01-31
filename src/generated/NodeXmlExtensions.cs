@@ -37,12 +37,11 @@ public static class NodeXmlExtensions
         }
 
         foreach (var referenced in node.Links
-            .Where(lnk => lnk.Label == Label.REFERENCES && lnk.Label.IsForward)
-            .Select(lnk => lnk.Target))
+            .Where(lnk => lnk.Label != Label.CONTAINS && lnk.Label.IsForward)
+            .Select(lnk => (lnk.Target, lnk.Label.Name)))
         {
-            element.SetAttributeValue("Ref", referenced.GetQualifiedName(root));
+            element.SetAttributeValue(referenced.Name, referenced.Target.GetQualifiedName(root));
         }
         return element;
     }
-
 }

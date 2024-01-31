@@ -17,10 +17,18 @@ var EDM = new
 
 var schema = model.Nodes.Add(new Schema("ODataDemo", "self"));
 
+var compositeKey = schema.Elements.Add(new ComplexType("CompositeKey"));
+var compositeKeyId = compositeKey.Properties.Add(new StructuralProperty("ID") { Type = EDM.String });
+
 var category = schema.Elements.Add(new EntityType("Category"));
-category.Properties.Add(new StructuralProperty("ID") { Type = EDM.Int32 });
+
+// category.Properties.Add(new StructuralProperty("ID") { Type = EDM.Int32 });
+category.Properties.Add(new StructuralProperty("ID") { Type = compositeKey });
 category.Properties.Add(new StructuralProperty("Description") { Type = EDM.String });
 category.Properties.Add(new StructuralProperty("ReleaseDate") { Type = EDM.Date });
+
+// var key = category.Key.Set(new Key());
+// key.PropertyRefs.Add(new PropertyRef("foo") { Name = compositeKeyId });
 
 var product = schema.Elements.Add(new EntityType("Product"));
 product.Properties.Add(new StructuralProperty("ID") { Type = EDM.Int32 });

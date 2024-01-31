@@ -8,7 +8,7 @@
       "name": "Spike Debug",
       "type": "dotnet",
       "request": "launch",
-      "projectPath": "${workspaceFolder}/spike/spike.csproj"
+      "projectPath": "${workspaceFolder}/demo/demo.csproj"
     },
     {
       "name": "Demo Debug",
