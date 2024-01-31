@@ -6,16 +6,16 @@ using System.Xml.Linq;
 public static class NodeXmlExtensions
 {
 
-    public static void WriteXml(this INode node, Model model, string path)
+    public static void WriteXml(this Model model, Schema schema, string path)
     {
         using var text = File.CreateText(path);
-        WriteXml(node, model, text);
+        model.WriteXml(schema, text);
         text.WriteLine("xxx");
     }
 
-    public static void WriteXml(this INode node, Model model, TextWriter writer)
+    public static void WriteXml(this Model model, Schema schema, TextWriter writer)
     {
-        var xml = node.ToXml(model);
+        var xml = schema.ToXml(model);
         using var xmlWriter = XmlWriter.Create(writer, new XmlWriterSettings { Indent = true });
         xml.WriteTo(xmlWriter);
     }
