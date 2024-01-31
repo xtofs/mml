@@ -8,11 +8,11 @@
     n4["EntityType: Product"]
     n5["StructuralProperty: ID"]
     n6["StructuralProperty: Description"]
-    n0--contains-->n1
-    n0--contains-->n2
-    n3--contains-->n4
-    n4--contains-->n5
-    n4--contains-->n6
-    n5-.references.->n2
-    n6-.references.->n1
+    n0-->n1
+    n0-->n2
+    n3-->n4
+    n4-->n5
+    n4-->n6
+    n5-.->n2
+    n6-.->n1
 ```

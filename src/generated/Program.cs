@@ -30,10 +30,10 @@ var EDM = new
 var schema = model.Nodes.Add(new Schema("ODataDemo", "self"));
 var product = schema.Elements.Add(new EntityType("Product"));
 var id = product.Properties.Add(new StructuralProperty("ID") { Type = EDM.Int32 });
-var _d = product.Properties.Add(new StructuralProperty("Description") { Type = EDM.String });
+var description = product.Properties.Add(new StructuralProperty("Description") { Type = EDM.String });
 
-// var k = product.Key.Set(new Key());
-// k.PropertyRefs.Add(new PropertyRef("ID") { Name = id });
+// var keys = product.Key.Set(new Key());
+// var key = keys.PropertyRefs.Add(new PropertyRef("ID_ref") { Name = id });
 
 Console.WriteLine(schema);
 

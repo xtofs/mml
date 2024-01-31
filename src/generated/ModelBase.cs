@@ -1,6 +1,7 @@
-using mermaid;
-
 namespace model;
+
+
+using mermaid;
 
 public interface INode
 {
@@ -23,25 +24,22 @@ public class Node : INode
 
     public IList<(Label Label, INode Target)> Links { get; } = [];
 
-    public override string ToString()
-    {
-        var sb = new StringBuilder();
-        this.Print(sb);
-        return sb.ToString();
-    }
+    // public override string ToString()
+    // {
+    //     var sb = new StringBuilder();
+    //     this.Print(sb);
+    //     return sb.ToString();
+    // }
 
-
-    private void Print(StringBuilder sb, string indent = "")
-    {
-        sb.AppendFormat("{0}{1}: {2}", indent, Name, typeName);
-        sb.AppendLine();
-        foreach (var node in this.Links.Where(lnk => lnk.Label == Label.CONTAINS && lnk.Label.IsForward).Select(lnk => lnk.Target))
-        {
-            ((Node)node).Print(sb, indent + "    ");
-        }
-    }
-
-
+    // private void Print(StringBuilder sb, string indent = "")
+    // {
+    //     sb.AppendFormat("{0}{1}: {2}", indent, Name, typeName);
+    //     sb.AppendLine();
+    //     foreach (var node in this.Links.Where(lnk => lnk.Label == Label.CONTAINS && lnk.Label.IsForward).Select(lnk => lnk.Target))
+    //     {
+    //         ((Node)node).Print(sb, indent + "    ");
+    //     }
+    // }
 }
 
 public record class ContainedCollection<T>(INode Host, Func<T, string> Selector) : IEnumerable<T> where T : INode
@@ -91,19 +89,6 @@ public record class ContainedSingleton<T>(INode Host) where T : INode
         Host.Links.Add((Label.CONTAINS, item));
         item.Links.Add((Label.CONTAINS.Inverse, Host));
         return item;
-    }
-}
-
-internal static class IListExtensions
-{
-    public static void RemoveFirst<T>(this IList<T> list, Func<T, bool> pred)
-    {
-        int i = 0;
-        while (i < list.Count)
-        {
-            if (pred(list[i])) { list.RemoveAt(i); break; }
-            i += 1;
-        }
     }
 }
 
@@ -160,18 +145,23 @@ public static class NodeExtensions
             var shape = node.GetType() == typeof(Schema) ? NodeShape.RoundedBox : NodeShape.Box;
             diagram.AddNode($"n{ix}", $"{node.GetType().Name}: {node.Name}", shape);
         }
-        foreach (var (source, label, target) in
-            from nodeIx in nodes
-            let n = nodeIx.Key
-            let ix = nodeIx.Value
-            from lnk in n.Links
-            where lnk.Label.IsForward
-            select (ix, lnk.Label, nodes[lnk.Target]))
+
+        var triples = from nodeAndIndex in nodes
+                      let node = nodeAndIndex.Key
+                      let ix = nodeAndIndex.Value
+                      from lnk in node.Links
+                      where lnk.Label.IsForward
+                      select (ix, lnk.Label, nodes.TryGetValue(lnk.Target, out var tgt) ? tgt : throw new KeyNotFoundException($"Key for {lnk.Target} not found"));
+        foreach (var (source, label, target) in triples)
         {
-            diagram.AddLink($"n{source}", $"n{target}", label.Name);
+            var style = label.Name == Label.CONTAINS.Name ? ContainmentStyle : ReferenceStyle;
+            diagram.AddLink($"n{source}", $"n{target}", "" /*label.Name*/, style);
         }
         return diagram;
     }
+
+    static readonly LinkStyle ContainmentStyle = new LinkStyle(Tip.None, Line.Normal, 1, Tip.Arrow);
+    static readonly LinkStyle ReferenceStyle = new LinkStyle(Tip.None, Line.Dotted, 1, Tip.Arrow);
 }
 
 public class Model : Node
@@ -182,20 +172,6 @@ public class Model : Node
     }
 
     public ContainedCollection<Node> Nodes { get; }
-}
-
-
-public static class IEnumerableExtensions
-{
-    public static IEnumerable<(T Item, int Index)> Enumerate<T>(this IEnumerable<T> items)
-    {
-        var ix = 0;
-        foreach (var item in items)
-        {
-            yield return (item, ix);
-            ix += 1;
-        }
-    }
 }
 
 /// <summary>

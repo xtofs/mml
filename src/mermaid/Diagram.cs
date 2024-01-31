@@ -12,14 +12,14 @@ public class Diagram
         return node;
     }
 
-    public Link AddLink(Node source, Node target, string label)
+    public Link AddLink(Node source, Node target, string label, LinkStyle style = null!)
     {
-        return AddLink(source.Key, target.Key, label);
+        return AddLink(source.Key, target.Key, label, style);
     }
 
-    public Link AddLink(string sourceKey, string targetKey, string label)
+    public Link AddLink(string sourceKey, string targetKey, string label, LinkStyle style = null!)
     {
-        var link = new Link(sourceKey, targetKey, label);
+        var link = new Link(sourceKey, targetKey, label, style);
         Links.Add(link);
         return link;
     }
@@ -30,8 +30,6 @@ public class Diagram
         WriteTo(file);
     }
 
-    internal const string INDENT = "    ";
-
     public void WriteTo(TextWriter writer)
     {
         // https://mermaid.js.org/syntax/flowchart.html
@@ -40,35 +38,16 @@ public class Diagram
         writer.WriteLine();
         foreach (var node in Nodes)
         {
-            var (open, close) = node.Shape.Parenthesis();
-            writer.WriteLine("{0}{1}{2}\"{3}\"{4}", INDENT, node.Key, open, node.Text, close);
+            node.WriteTo(writer);
         }
-        var ix = 0;
-        var indices = new List<int>();
-        // A-. text .-> B
+
         foreach (var link in Links)
         {
-            if (string.IsNullOrEmpty(link.Label))
-            {
-                writer.WriteLine("{0}{1}-->{2}", INDENT, link.SourceKey, link.TargetKey);
-            }
-            else
-            {
-                // TODO: remove hardcoded styling
-                if (link.Label == "contains")
-                {
-                    writer.WriteLine("{0}{1}--{2}-->{3}", INDENT, link.SourceKey, link.Label, link.TargetKey);
-                }
-                else
-                {
-                    writer.WriteLine("{0}{1}-.{2}.->{3}", INDENT, link.SourceKey, link.Label, link.TargetKey);
-                }
-            }
-            // TODO: remove hardcoded styling
-            if (link.Label == "contains") { indices.Add(ix); }
-            ix += 1;
+            link.WriteTo(writer);
         }
-        // writer.WriteLine("    linkStyle {0} stroke:orange", string.Join(",", indices));
+
         writer.WriteLine("```");
     }
+
+
 }

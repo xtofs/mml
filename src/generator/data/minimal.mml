@@ -1,7 +1,7 @@
 class Schema { 
     Namespace: string,
     Alias: string,
-    Elements: [SchemaElement | Name]
+    Elements: [SchemaElement; Name]
 }
 
 trait SchemaElement { // the child  elements of a schema
@@ -23,7 +23,7 @@ class PrimitiveType extends SchemaElement + ValueType
 class EnumType extends SchemaElement + ValueType
 { 
      Name: string,
-     Members: [Member | Name]
+     Members: [Member; Name]
 }
 
 class Member 
@@ -35,18 +35,18 @@ class Member
 class ComplexType extends SchemaElement + ValueType
 {
     Name: string,
-    Properties: [Property | Name]
+    Properties: [Property; Name]
 }
 
 class EntityType extends SchemaElement + Type
 {
     Name: string,
     Key: Key,
-    Properties: [Property | Name]
+    Properties: [Property; Name]
 }
 
 class Key {
-    PropertyRefs: [PropertyRef | Alias]
+    PropertyRefs: [PropertyRef; Alias]
 }
 
 class PropertyRef
