@@ -28,7 +28,8 @@ category.Properties.Add(new StructuralProperty("Description") { Type = EDM.Strin
 category.Properties.Add(new StructuralProperty("ReleaseDate") { Type = EDM.Date });
 
 // var key = category.Key.Set(new Key());
-// key.PropertyRefs.Add(new PropertyRef("foo") { Name = compositeKeyId });
+var key = category.Key.Get<Key>()!;
+key.PropertyRefs.Add(new PropertyRef("foo") { Name = compositeKeyId });
 
 var product = schema.Elements.Add(new EntityType("Product"));
 product.Properties.Add(new StructuralProperty("ID") { Type = EDM.Int32 });
