@@ -45,22 +45,26 @@ public static class MetaModelExtensions
         writer.WriteLine($"public class {classifier.Name}: Node{classifier.Extends.Join(", ", ", ")}");
         writer.WriteLine("{");
 
-        // constructor
         var fieldsOfPrimitiveType = classifier.Fields.FilterSelect<Field, (string Name, Builtin Type)>(FilterByPrimitiveType);
         var fieldsOfNonPrimitiveType = classifier.Fields.Where(f => f.Type is not Builtin);
 
+        // constructor
         var args = string.Join(", ", from arg in fieldsOfPrimitiveType select $"{arg.Item2.CSharpName} {arg.Item1}");
         var nameField = fieldsOfPrimitiveType.Select(f => f.Name).FirstOrDefault() ?? "\"\"";
 
         writer.WriteLine($"    public  {classifier.Name} ({args}) : base({nameField})");
         writer.WriteLine($"    {{");
+        foreach (var field in fieldsOfPrimitiveType)
+        {
+            writer.WriteLine($"         this.{field.Name} = {field.Name};");
+        }
         foreach (var field in fieldsOfNonPrimitiveType)
         {
             var (name, type, _) = field;
             switch (type)
             {
                 case Builtin bi:
-                    writer.WriteLine($"= default!; // = {name}");
+                    // writer.WriteLine($"= default!; // = {name}");
                     break;
                 case Contained co:
                     writer.WriteLine($"        this.{field.Name} = new ContainedSingleton<{co.Name}>(this);");
@@ -76,6 +80,14 @@ public static class MetaModelExtensions
             };
         }
         writer.WriteLine("    }");
+
+        writer.WriteLine();
+        writer.WriteLine("    public override string NodeTag {{ get; }} = \"{0}\";", classifier.Name);
+
+        writer.WriteLine();
+        writer.WriteLine("    public override IEnumerable<(string, object)> Attributes => [{0}];",
+            string.Join(", ", from field in fieldsOfPrimitiveType select $"(nameof({field.Name}), {field.Name})")
+        );
 
         // properties except the name property inherited from Node
         foreach (var field in classifier.Fields)

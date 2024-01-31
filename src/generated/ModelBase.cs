@@ -1,26 +1,39 @@
 namespace model;
 
-
+using System.Runtime;
 using mermaid;
 
 public interface INode
 {
     string Name { get; }
 
+    string NodeTag { get; }
+
+    IEnumerable<(string, object)> Attributes { get; }
+
     IList<(Label Label, INode Target)> Links { get; }
+
+    // string FullyQualifiedName { get; }
+
+
+    string GetQualifiedName(INode root);
 }
 
-public class Node : INode
+public abstract class Node : INode
 {
     public Node(string name)
     {
         Name = name;
-        typeName = this.GetType().Name;
+        // _FullyQualifiedName = new Lazy<string>(GetFullyQualifiedName);
     }
 
-    public string Name { get; }
+    public string Name { get; protected set; }
 
-    private readonly string typeName;
+    public abstract string NodeTag { get; }
+
+    public INode? Parent => this.Links.FirstOrDefault(lnk => lnk.Label == Label.CONTAINS.Inverse).Target;
+
+    public abstract IEnumerable<(string, object)> Attributes { get; }
 
     public IList<(Label Label, INode Target)> Links { get; } = [];
 
@@ -40,6 +53,26 @@ public class Node : INode
     //         ((Node)node).Print(sb, indent + "    ");
     //     }
     // }
+
+    // public string FullyQualifiedName => _FullyQualifiedName.Value;
+
+
+    // private readonly Lazy<string> _FullyQualifiedName;
+
+    // private string GetFullyQualifiedName()
+    // {
+    //     return this.Parent == null ? this.Name : this.Parent.FullyQualifiedName + "." + Name;
+    // }
+
+    public string GetQualifiedName(INode root)
+    {
+        ArgumentNullException.ThrowIfNull(root);
+        return this.Parent == root || this.Parent == null ?
+            this.Name :
+            this.Parent.GetQualifiedName(root) + "." + Name;
+    }
+
+
 }
 
 public record class ContainedCollection<T>(INode Host, Func<T, string> Selector) : IEnumerable<T> where T : INode
@@ -172,6 +205,10 @@ public class Model : Node
     }
 
     public ContainedCollection<Node> Nodes { get; }
+
+    public override IEnumerable<(string, object)> Attributes => [];
+
+    public override string NodeTag => "Model";
 }
 
 /// <summary>
@@ -198,5 +235,6 @@ public class Label
     }
 
     public static readonly Label CONTAINS = Label.Create("contains", "containted");
+
     public static readonly Label REFERENCES = Label.Create("references", "referenced");
 }
