@@ -38,4 +38,6 @@ model.WriteXml(schema, Console.Out);
 
 var diagram = model.ToDiagram();
 diagram.WriteTo("model.md");
+Console.WriteLine();
+Console.WriteLine("wrote ./model.md(1,1)");
 

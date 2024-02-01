@@ -39,7 +39,7 @@ public static class ModelXmlExtensions
             .Where(lnk => lnk.Label != Label.CONTAINS && lnk.Label != Label.CONTAINED)
             .Select(lnk => (lnk.Target, lnk.Label)))
         {
-            Console.WriteLine("qualified name {0}", target.GetQualifiedName(root));
+            // Console.WriteLine("qualified name {0}", target.GetQualifiedName(node));
             element.SetAttributeValue(labelName, target.GetQualifiedName(root));
         }
 

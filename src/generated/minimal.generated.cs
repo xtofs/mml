@@ -4,7 +4,7 @@
 //     Changes to this file may cause incorrect behavior and
 //     will be lost if the code is regenerated.
 // </auto-generated>
-// generated from data/minimal.mml, written 2024-01-31 21::13:26
+// generated from data/minimal.mml, written 2024-02-01 09::53:17
 
 using model;
 public class Schema: Node

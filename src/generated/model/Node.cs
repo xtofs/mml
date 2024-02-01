@@ -1,4 +1,19 @@
+using System.Collections.Frozen;
+
 namespace model;
+
+public interface INode
+{
+    string Name { get; }
+
+    string Tag { get; }
+
+    IEnumerable<(string, object)> Attributes { get; }
+
+    IList<(string Label, INode Target)> Links { get; }
+
+    string GetQualifiedName(INode root);
+}
 
 public abstract class Node(string name) : INode
 {
@@ -12,7 +27,7 @@ public abstract class Node(string name) : INode
 
     public IList<(string Label, INode Target)> Links { get; } = [];
 
-    public string GetQualifiedName(Model root)
+    public string GetQualifiedName(INode root)
     {
         ArgumentNullException.ThrowIfNull(root);
         if (this.Parent == null)
@@ -25,9 +40,18 @@ public abstract class Node(string name) : INode
         }
         else
         {
-            return this.Parent.GetQualifiedName(root) + "." + this.Name;
+            var sep = SEPARATORS.TryGetValue(this.Parent.GetType(), out var ch) ? ch : ".";
+            return this.Parent.GetQualifiedName(root) + sep + this.Name;
         }
     }
+
+    static readonly FrozenDictionary<System.Type, string> SEPARATORS = new Dictionary<System.Type, string>
+    {
+        [typeof(Schema)] = ".",
+        [typeof(StructuralProperty)] = "::",
+        [typeof(EntityType)] = "/",
+        [typeof(ComplexType)] = "/",
+    }.ToFrozenDictionary();
 }
 
 public static class INodeExtensions
