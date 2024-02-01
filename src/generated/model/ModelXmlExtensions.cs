@@ -3,7 +3,7 @@ namespace model;
 using System.Xml;
 using System.Xml.Linq;
 
-public static class NodeXmlExtensions
+public static class ModelXmlExtensions
 {
 
     public static void WriteXml(this Model model, Schema schema, string path)
@@ -28,24 +28,28 @@ public static class NodeXmlExtensions
     {
         var element = new XElement(node.NodeTag);
 
+        // add XML attributes
         foreach (var (name, value) in node.Attributes)
         {
             element.SetAttributeValue(name, value);
         }
 
+        // add XML attributes for references
+        foreach (var (target, labelName) in node.Links
+            .Where(lnk => lnk.Label != Label.CONTAINS && lnk.Label != Label.CONTAINED)
+            .Select(lnk => (lnk.Target, lnk.Label)))
+        {
+            Console.WriteLine("qualified name {0}", target.GetQualifiedName(root));
+            element.SetAttributeValue(labelName, target.GetQualifiedName(root));
+        }
+
         foreach (var contained in node.Links
-            .Where(lnk => lnk.Label == Label.CONTAINS && lnk.Label.IsForward)
+            .Where(lnk => lnk.Label == Label.CONTAINS)
             .Select(lnk => lnk.Target))
         {
             element.Add(contained.ToXml(root));
         }
 
-        foreach (var (target, labelName) in node.Links
-            .Where(lnk => lnk.Label != Label.CONTAINS && lnk.Label.IsForward)
-            .Select(lnk => (lnk.Target, lnk.Label.Name)))
-        {
-            element.SetAttributeValue(labelName, target.GetQualifiedName(root));
-        }
         return element;
     }
 }

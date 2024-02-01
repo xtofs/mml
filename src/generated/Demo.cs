@@ -6,7 +6,7 @@ using model;
 var model = new Model();
 
 #region edm
-var edm = model.Nodes.Add(new Schema("EDM", "EDM"));
+var edm = model.Nodes.Add(new Schema("Edm", "Edm"));
 var EDM = new
 {
     Int32 = edm.Elements.Add(new PrimitiveType("Int32")),
@@ -27,9 +27,8 @@ category.Properties.Add(new StructuralProperty("ID") { Type = compositeKey });
 category.Properties.Add(new StructuralProperty("Description") { Type = EDM.String });
 category.Properties.Add(new StructuralProperty("ReleaseDate") { Type = EDM.Date });
 
-// var key = category.Key.Set(new Key());
-var key = category.Key.Get<Key>()!;
-key.PropertyRefs.Add(new PropertyRef("foo") { Name = compositeKeyId });
+var key = category.Key.Set(new Key());
+key.PropertyRefs.Add(new PropertyRef(null) { Name = compositeKeyId });
 
 var product = schema.Elements.Add(new EntityType("Product"));
 product.Properties.Add(new StructuralProperty("ID") { Type = EDM.Int32 });
@@ -40,4 +39,5 @@ model.WriteXml(schema, Console.Out);
 
 var diagram = model.ToDiagram();
 diagram.WriteTo("model.md");
+
 

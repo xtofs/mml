@@ -112,7 +112,7 @@ public static class MetaModelExtensions
                     break;
                 case Reference re:
                     writer.WriteLine($"    private ReferencedSingleton<{re.Name}> _{name} {{ get; }}");
-                    writer.WriteLine($"    public {attr}{re.Name} {name} {{ get => _{name}.Get<{re.Name}>(); set => _{name}.Set(value); }}");
+                    writer.WriteLine($"    public {attr}{re.Name} {name} {{ get => _{name}.Get(); set => _{name}.Set(value); }}");
                     break;
                 case Dictionary di:
                     writer.WriteLine($"    public {attr}ContainedCollection<{di.Type}> {name} {{ get; }}");

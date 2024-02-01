@@ -49,7 +49,6 @@ public class PrimitiveType : Node, SchemaElement, ValueType
     public override string NodeTag { get; } = "PrimitiveType";
 
     public override IEnumerable<(string, object)> Attributes => [(nameof(Name), Name)];
-
 }
 
 public class EnumType : Node, SchemaElement, ValueType
@@ -113,7 +112,6 @@ public class EntityType : Node, SchemaElement, Type
 
     public override IEnumerable<(string, object)> Attributes => [(nameof(Name), Name)];
 
-
     public ContainedSingleton<Key> Key { get; }
 
     public ContainedCollection<Property> Properties { get; }
@@ -138,7 +136,7 @@ public class PropertyRef : Node
     public PropertyRef(string Alias) : base(Alias)
     {
         this.Alias = Alias;
-        this._Name = new ReferencedSingleton<Property>(this, "Name", "ComponentOfKey");
+        this._Name = new ReferencedSingleton<Property>(this, "Name");
     }
 
     public override string NodeTag { get; } = "PropertyRef";
@@ -146,7 +144,7 @@ public class PropertyRef : Node
     public override IEnumerable<(string, object)> Attributes => [(nameof(Alias), Alias)];
 
     private ReferencedSingleton<Property> _Name { get; }
-    public new Property Name { get => _Name.Get<Property>(); set => _Name.Set(value); }
+    public new Property Name { get => _Name.Get(); set => _Name.Set(value); }
 
     public string Alias { get; }
 }
@@ -160,7 +158,7 @@ public class StructuralProperty : Node, Property
     public StructuralProperty(string Name) : base(Name)
     {
         this.Name = Name;
-        this._Type = new ReferencedSingleton<ValueType>(this, "Type", "TypeOfProperty");
+        this._Type = new ReferencedSingleton<ValueType>(this, "Type");
     }
 
     public override string NodeTag { get; } = "Property";
@@ -168,7 +166,7 @@ public class StructuralProperty : Node, Property
     public override IEnumerable<(string, object)> Attributes => [(nameof(Name), Name)];
 
     private ReferencedSingleton<ValueType> _Type { get; }
-    public ValueType Type { get => _Type.Get<ValueType>(); set => _Type.Set(value); }
+    public ValueType Type { get => _Type.Get(); set => _Type.Set(value); }
 }
 
 public class NavigationProperty : Node, Property
@@ -176,7 +174,7 @@ public class NavigationProperty : Node, Property
     public NavigationProperty(string Name) : base(Name)
     {
         this.Name = Name;
-        this._Type = new ReferencedSingleton<EntityType>(this, "Type", "TypeOfNavigationProperty");
+        this._Type = new ReferencedSingleton<EntityType>(this, "Type");
     }
 
     public override string NodeTag { get; } = "NavigationProperty";
@@ -185,6 +183,6 @@ public class NavigationProperty : Node, Property
 
 
     private ReferencedSingleton<EntityType> _Type { get; }
-    public EntityType Type { get => _Type.Get<EntityType>(); set => _Type.Set(value); }
+    public EntityType Type { get => _Type.Get(); set => _Type.Set(value); }
 }
 
