@@ -1,6 +1,16 @@
 namespace model;
 public static class NodeExtensions
 {
+
+    public static IEnumerable<INode> DescendantsOrSelf(this INode node)
+    {
+        yield return node;
+        foreach (var descendant in Descendants(node))
+        {
+            yield return descendant;
+        }
+    }
+
     /// <summary>
     /// descendants of node (without self)
     /// </summary>

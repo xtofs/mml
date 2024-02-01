@@ -4,23 +4,28 @@ using mermaid;
 
 public static class ModelDiagramExtensions
 {
+
+
     public static mermaid.Diagram ToDiagram(this Model root)
     {
-        var nodes = root.Descendants().Enumerate().ToDictionary();
-
+        var nodeLookup = root.Descendants().Enumerate().ToDictionary();
         var diagram = new mermaid.Diagram();
-        foreach (var (node, ix) in nodes)
+
+        // Nodes
+        foreach (var (node, ix) in nodeLookup)
         {
             var shape = node.GetType() == typeof(Schema) ? NodeShape.RoundedBox : NodeShape.Box;
-            diagram.AddNode($"n{ix}", $"{node.GetType().Name}: {node.Name}", shape);
+            var name = string.IsNullOrWhiteSpace(node.Name) ? node.GetType().Name : $"{node.GetType().Name}: {node.Name}";
+            diagram.AddNode($"n{ix}", name, shape);
         }
 
+        // Links
         int GetTargetId(INode target)
         {
-            return nodes.TryGetValue(target, out var tgt) ? tgt : throw new KeyNotFoundException($"Value for Key '{target}' not found");
+            return nodeLookup.TryGetValue(target, out var tgt) ? tgt : throw new KeyNotFoundException($"Value for Key '{target}' not found");
         }
 
-        var triples = from nodeAndIndex in nodes
+        var triples = from nodeAndIndex in nodeLookup
                       let node = nodeAndIndex.Key
                       let ix = nodeAndIndex.Value
                       from lnk in node.Links

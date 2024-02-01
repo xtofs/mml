@@ -29,3 +29,9 @@ public abstract class Node(string name) : INode
         }
     }
 }
+
+public static class INodeExtensions
+{
+    public static IEnumerable<INode> Children(this INode node) =>
+        node.Links.Where(lnk => lnk.Label == Label.CONTAINS).Select(lnk => lnk.Target);
+}
