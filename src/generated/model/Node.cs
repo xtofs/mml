@@ -4,7 +4,7 @@ public abstract class Node(string name) : INode
 {
     public string Name { get; protected set; } = name;
 
-    public abstract string NodeTag { get; }
+    public abstract string Tag { get; }
 
     public INode? Parent => this.Links.FirstOrDefault(lnk => lnk.Label == Label.CONTAINED).Target;
 

@@ -26,7 +26,7 @@ static class MetaModelParser
             from pr in Parser.Expect(TokenType.Semicolon)
             from pa in Parser.Expect(TokenType.Identifier).SeparatedBy(Parser.Expect(TokenType.Period))
             from cl in Parser.Expect(TokenType.RightSquareBracket)
-            select new Dictionary(ty, pa);
+            select new Collection(ty, pa);
 
         var reference =
             from aa in Parser.Expect(TokenType.Ampersand)

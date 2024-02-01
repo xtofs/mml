@@ -18,8 +18,9 @@ public class ContainedSingleton<T> where T : INode, new()
             .Select(lnk => lnk.Target)
             .OfType<T>();
 
-    public S? Get<S>() where S : T => Items
-              .OfType<S>()
+    // public S? Get<S>() where S : T => Items
+    public T? Get() => Items
+              .OfType<T>()
               .SingleOrDefault();
 
     public IEnumerator<T> GetEnumerator() => Items.GetEnumerator();

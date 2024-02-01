@@ -4,7 +4,7 @@ public interface INode
 {
     string Name { get; }
 
-    string NodeTag { get; }
+    string Tag { get; }
 
     IEnumerable<(string, object)> Attributes { get; }
 

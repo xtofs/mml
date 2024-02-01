@@ -22,18 +22,17 @@ var compositeKeyId = compositeKey.Properties.Add(new StructuralProperty("ID") { 
 
 var category = schema.Elements.Add(new EntityType("Category"));
 
-// category.Properties.Add(new StructuralProperty("ID") { Type = EDM.Int32 });
 category.Properties.Add(new StructuralProperty("ID") { Type = compositeKey });
 category.Properties.Add(new StructuralProperty("Description") { Type = EDM.String });
 category.Properties.Add(new StructuralProperty("ReleaseDate") { Type = EDM.Date });
 
-var key = category.Key.Set(new Key());
-key.PropertyRefs.Add(new PropertyRef(null) { Name = compositeKeyId });
+category.Key.PropertyRefs.Add(new PropertyRef(null) { Name = compositeKeyId });
 
 var product = schema.Elements.Add(new EntityType("Product"));
-product.Properties.Add(new StructuralProperty("ID") { Type = EDM.Int32 });
+var prodId = product.Properties.Add(new StructuralProperty("ID") { Type = EDM.Int32 });
 product.Properties.Add(new StructuralProperty("Description") { Type = EDM.String });
-product.Properties.Add(new NavigationProperty("Category") { Type = category });
+product.Properties.Add(new NavigationProperty("Category", false) { Type = category });
+product.Key.PropertyRefs.Add(new PropertyRef(null) { Name = prodId });
 
 model.WriteXml(schema, Console.Out);
 

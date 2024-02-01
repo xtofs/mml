@@ -48,7 +48,7 @@ public static class MetaModelExtensions
         var fieldsOfPrimitiveType = classifier.Fields.FilterSelect<Field, (string Name, Builtin Type)>(FilterByPrimitiveType);
         var fieldsOfNonPrimitiveType = classifier.Fields.Where(f => f.Type is not Builtin);
 
-        // constructor
+        #region constructor
         var args = string.Join(", ", from arg in fieldsOfPrimitiveType select $"{arg.Item2.CSharpName} {arg.Item1}");
         var nameField = fieldsOfPrimitiveType.Select(f => f.Name).FirstOrDefault() ?? "\"\"";
 
@@ -56,7 +56,7 @@ public static class MetaModelExtensions
         writer.WriteLine($"    {{");
         foreach (var field in fieldsOfPrimitiveType)
         {
-            writer.WriteLine($"         this.{field.Name} = {field.Name};");
+            writer.WriteLine($"        this.{field.Name} = {field.Name};");
         }
         foreach (var field in fieldsOfNonPrimitiveType)
         {
@@ -64,15 +64,14 @@ public static class MetaModelExtensions
             switch (type)
             {
                 case Builtin bi:
-                    // writer.WriteLine($"= default!; // = {name}");
                     break;
                 case Contained co:
-                    writer.WriteLine($"        this.{field.Name} = new ContainedSingleton<{co.Name}>(this);");
+                    writer.WriteLine($"        this._{field.Name} = new ContainedSingleton<{co.Name}>(this);");
                     break;
                 case Reference re:
-                    writer.WriteLine($"        this._{field.Name} = new ReferencedSingleton<{re.Name}>(this);");
+                    writer.WriteLine($"        this._{field.Name} = new ReferencedSingleton<{re.Name}>(this, \"{field.Name}\");");
                     break;
-                case Dictionary di:
+                case Collection di:
                     writer.WriteLine($"        this.{field.Name} = new ContainedCollection<{di.Type}>(this, (x) => x.{string.Join(".", di.Path)});");
                     break;
                 default:
@@ -80,16 +79,17 @@ public static class MetaModelExtensions
             };
         }
         writer.WriteLine("    }");
+        #endregion
 
         writer.WriteLine();
-        writer.WriteLine("    public override string NodeTag {{ get; }} = \"{0}\";", classifier.Name);
+        writer.WriteLine("    public override string Tag {{ get; }} = \"{0}\";", classifier.Name);
 
         writer.WriteLine();
         writer.WriteLine("    public override IEnumerable<(string, object)> Attributes => [{0}];",
             string.Join(", ", from field in fieldsOfPrimitiveType select $"(nameof({field.Name}), {field.Name})")
         );
 
-        // properties except the name property inherited from Node
+        #region properties, except the name property inherited from Node
         foreach (var field in classifier.Fields)
         {
             writer.WriteLine();
@@ -108,13 +108,16 @@ public static class MetaModelExtensions
                     writer.WriteLine($"    public {attr}{bi.CSharpName} {name} {{ get; }}");
                     break;
                 case Contained co:
-                    writer.WriteLine($"    public {attr} ContainedSingleton<{co.Name}> {name} {{ get; }}");
+                    writer.WriteLine($"    private ContainedSingleton<{co.Name}> _{name} {{ get; }}");
+                    writer.WriteLine();
+                    writer.WriteLine($"    public {attr}{co.Name} {name} {{ get => _{name}.Get(); set => _{name}.Set(value); }}");
                     break;
                 case Reference re:
                     writer.WriteLine($"    private ReferencedSingleton<{re.Name}> _{name} {{ get; }}");
+                    writer.WriteLine();
                     writer.WriteLine($"    public {attr}{re.Name} {name} {{ get => _{name}.Get(); set => _{name}.Set(value); }}");
                     break;
-                case Dictionary di:
+                case Collection di:
                     writer.WriteLine($"    public {attr}ContainedCollection<{di.Type}> {name} {{ get; }}");
                     break;
                 default:
@@ -122,6 +125,7 @@ public static class MetaModelExtensions
             }
             // writer.WriteLine($"    public {FieldAsProperty(field.Name, field.Type)} {{ get; protected init; }}");
         }
+        #endregion
 
         writer.WriteLine("}");
         writer.WriteLine();

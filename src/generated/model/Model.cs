@@ -11,5 +11,5 @@ public class Model : Node
 
     public override IEnumerable<(string, object)> Attributes => [];
 
-    public override string NodeTag => "Model";
+    public override string Tag => "Model";
 }

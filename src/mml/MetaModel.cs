@@ -169,7 +169,7 @@ public sealed record Reference(string Name) : FieldType()
     }
 }
 
-public sealed record Dictionary(string Type, IReadOnlyList<string> Path) : FieldType()
+public sealed record Collection(string Type, IReadOnlyList<string> Path) : FieldType()
 {
     public override string ToString() => $"{{Type &{string.Join(".", Path)}}}";
 

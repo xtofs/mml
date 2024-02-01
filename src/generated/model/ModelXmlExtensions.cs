@@ -26,7 +26,7 @@ public static class ModelXmlExtensions
 
     public static XElement ToXml(this INode node, Model root)
     {
-        var element = new XElement(node.NodeTag);
+        var element = new XElement(node.Tag);
 
         // add XML attributes
         foreach (var (name, value) in node.Attributes)
